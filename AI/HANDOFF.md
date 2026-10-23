@@ -4,15 +4,15 @@
 
 ## Verified / discussed
 
-- Repository: `vhan482/aeter-tnw` (public; checked accessible for read; initially empty).
-- GitHub content write via connected integration **failed with HTTP 403 `Resource not accessible by integration`**. Do not claim docs have been committed until verified.
+- Repository: `vhan482/aeter-tnw` (public; source and project documentation now present on `main`; read and write connectivity checked 2026-10-23).
+- GitHub connector write test: this handoff change was committed after installing the connector for the personal repository. Keep documenting connection failures if they recur.
 - Product requirements and five Guild League screenshot layouts, Mirror World leaderboard, Guild Siege report and roster screenshot were discussed; details in `../NORTH_STAR.md`.
 - Infrastructure: upgraded OVH VPS panel shows 2 vCores/8GB/80GB next to running Zulip. Upgrade still needs OS-level post-reboot verification.
 - No live PostgreSQL deployment, OCR engine or operational React/Express system is confirmed in this project.
 
 ## Next session checklist
 
-1. Confirm docs have been added to GitHub (and fix GitHub App repository Contents write access if wanting assistant commits).
+1. Docs are present on GitHub. Keep this handoff and `../NORTH_STAR.md` synchronized with future decisions.
 2. Verify VPS post-reboot system resources and **all Zulip/existing services**.
 3. Confirm game roster `Rating` is GR and choose week start.
 4. Agree minimal membership/auth access controls.
