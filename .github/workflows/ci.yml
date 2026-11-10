@@ -16,19 +16,23 @@ jobs:
         with:
           node-version: '22'
       - run: corepack enable
-      # Temporary bootstrap: GitHub PR environments default to immutable installs.
-      # Generate the initial lock once, commit it, then restore immutable mode.
-      - name: Bootstrap dependency lock
-        run: yarn install
+      - name: Install locked dependencies
+        run: yarn install --immutable
+      # Temporary generation step: initial migrations are reviewed/committed,
+      # then this is removed and CI checks the tracked migration set.
+      - name: Generate initial schema migration
+        run: yarn workspace @aeter/api db:generate
         env:
-          YARN_ENABLE_IMMUTABLE_INSTALLS: 'false'
-          YARN_ENABLE_HARDENED_MODE: '0'
-      - name: Export generated lock for repository commit
+          DATABASE_URL: postgresql://bootstrap:bootstrap@127.0.0.1:55432/bootstrap
+      - name: Export generated migrations for repository commit
+        shell: bash
         run: |
-          echo 'BEGIN_AETER_YARN_LOCK'
-          base64 -w0 yarn.lock
-          echo
-          echo 'END_AETER_YARN_LOCK'
+          find apps/api/drizzle -type f -print0 | sort -z | while IFS= read -r -d '' path; do
+            echo "BEGIN_AETER_MIGRATION_FILE=$path"
+            base64 -w0 "$path"
+            echo
+            echo "END_AETER_MIGRATION_FILE=$path"
+          done
       - run: yarn typecheck
       - run: yarn test
       - run: yarn build
