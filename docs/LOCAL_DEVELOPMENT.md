@@ -17,7 +17,6 @@ cp infra/.env.example infra/.env
 cp apps/api/.env.example apps/api/.env
 # Set the SAME unique, local-only PostgreSQL password in both files; encode special URL characters.
 yarn db:up
-yarn db:generate
 yarn db:migrate
 # Terminal 1:
 yarn dev:api
@@ -30,9 +29,9 @@ Windows PowerShell: use `Copy-Item infra/.env.example infra/.env` and `Copy-Item
 `http://127.0.0.1:3001/api/health` reports application liveness.
 `http://127.0.0.1:3001/api/ready` reports PostgreSQL connectivity; returns 503 when DB is unavailable.
 
-### Important first-install gate
+### Tracked dependency and migration baseline
 
-This PR does **not** include a generated Yarn lockfile or Drizzle migration bundle, because dependencies could not be installed in the authoring environment. After first successful `yarn install`, commit `yarn.lock`; after `yarn db:generate`, inspect and commit `apps/api/drizzle/`. **Neither CI reproducibility nor DB migrations are complete until those tracked files exist.** Never generate/apply migrations on production before review. No data has been migrated out of the browser prototype.
+`yarn.lock` is committed and CI installs using `yarn install --immutable`. The initial Drizzle SQL migration plus metadata are committed under `apps/api/drizzle/`. **For first-time local setup, run `yarn db:migrate` only; do not generate a new migration for an unchanged schema.** For future schema changes, run `yarn db:generate`, inspect the diff, then apply and commit migrations. Never run unreviewed migrations on a production database. No data has been migrated out of the browser prototype.
 
 ### Security and limits
 

@@ -26,6 +26,8 @@ Build a **cost-conscious, self-hosted guild operations and analytics dashboard**
 - **Hosting:** OVH control panel previously showed an upgrade to **2 vCores / 8 GB / 80 GB** for the Zulip VPS; guest-OS resources, filesystem and existing service health have not yet been reverified in this project. **Do not reboot or modify Zulip as part of documentation cleanup.**
 - **Reference UI:** The RONW Guild Management Tool screenshots inspired future team planning and dashboard workflows. They are **design references, not Aeternum member data, licensed source code, or proof that those features exist here**.
 
+**In-flight:** Draft [PR #1](https://github.com/vhan482/aeter-tnw/pull/1) introduces Yarn 4, Express health/readiness, local PostgreSQL and an initial tracked roster schema/migration. It is **not merged**, does not provide authenticated CRUD, and has not deployed to any VPS.
+
 **Scope convention:** Sections 3.1–3.6 are the **core planned product**. Section 3.7 is an **approved future direction** after core workflows. Section 3.8 lists **deferred ideas**, not commitments. Exact implementation choices remain subject to tests and user review.
 
 ## 2. Non-negotiable principles

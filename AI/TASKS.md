@@ -15,7 +15,8 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Baseline code/test readiness, then choose incremental backend integration rather than a destructive rewrite.
 
 ## P1 — Local backend foundation
-- [x] Create Yarn 4 workspace foundation, local PostgreSQL Compose definition, API health/readiness scaffold (pending clean install/build tests and lockfile).
+- [ ] Verify CI's immutable install, migration run, API readiness smoke test and local developer setup for PR #1.
+- [x] Create Yarn 4 workspace foundation, lockfile, local PostgreSQL Compose definition, API health/readiness scaffold and initial generated Drizzle migration (draft PR #1; merge pending).
 - [ ] Preserve/reuse working React components as applicable; introduce Tailwind/shadcn only after checking existing behavior.
 - [ ] Initialize Express/TS, health endpoint and Zod validation.
 - [ ] Local Docker Compose with isolated PostgreSQL + Drizzle/SQL migrations, no public DB port.
