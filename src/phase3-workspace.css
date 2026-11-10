@@ -1,0 +1,29 @@
+.phase-layout{display:grid;gap:20px}.phase-header h1{font-size:30px;margin:9px 0}.phase-header p{font-size:13px;color:#9aacc3}
+.phase-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.phase-grid .roster-card{min-width:0}.phase-title{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.phase-title h2{font-size:18px;margin:0 0 16px}.phase-title h3{font-size:15px;margin:18px 0 12px}
+.phase-title span{color:#9db2ca;font-size:12px}.phase-form{display:grid;gap:12px;margin-bottom:20px}
+.phase-field{display:grid;gap:6px;font-size:12px;color:#b2c3d8}
+.phase-field input,.phase-field select,.phase-field textarea{border-radius:8px;border:1px solid #425671;background:#0e192c;color:#f4f7fb;padding:10px;width:100%;font:inherit;min-width:0}
+.phase-field textarea{min-height:85px;font-family:inherit;resize:vertical;line-height:1.4}
+.phase-form button,.phase-layout button{cursor:pointer}.phase-form button:disabled{opacity:.55;cursor:not-allowed}
+.phase-form .roster-primary{padding:10px;background:#c9ad7d;border:1px solid #c9ad7d;border-radius:8px;color:#17223a;font-weight:700}
+.phase-list{display:grid;gap:7px;max-height:360px;overflow:auto;margin-top:10px}
+.phase-list>button{display:grid;gap:5px;padding:12px;text-align:left;border-radius:8px;background:#17263b;border:1px solid #354a64;color:#e6edf6}
+.phase-list>button small{color:#a4b4c9;font-size:11px;overflow-wrap:anywhere}
+.phase-list>button.phase-selected{border-color:#c9ad7d;background:#293550}
+.phase-hint{font-size:12px;color:#94a9c2;line-height:1.6}
+.phase-checkpoints{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.phase-checkpoints>div{display:grid;gap:5px;border:1px solid #45516a;padding:13px;border-radius:8px;color:#d6dfed;text-align:center}
+.phase-checkpoints small{font-size:10px;color:#aabacb}.phase-checkpoints .phase-captured{border-color:#4d9679;background:#19372f}
+.phase-checkbox{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.5;color:#bdcde1}
+.phase-checkbox input{accent-color:#c9ad7d;margin-top:3px}
+.phase-evidence-row{border-bottom:1px solid #354259;padding:12px 2px;display:grid;gap:6px;font-size:12px;overflow-wrap:anywhere}
+.phase-evidence-row>span{color:#d8e6f7}.phase-evidence-row small{color:#9ab1c9}
+.phase-error,.phase-success{border:1px solid #8d485a;background:#47232d;border-radius:9px;padding:12px;font-size:12px}
+.phase-success{background:#16372f;border-color:#3a8065}
+.phase-note-form{margin-top:18px;padding-top:15px;border-top:1px solid #32445b}
+.phase-audit{font-size:12px;color:#aabbd1;padding:14px 0}
+.roster-nav-active,.roster-nav-muted{border:0;text-align:left;width:100%;background:transparent;cursor:pointer;font-family:inherit}
+button.roster-nav-active{background:#233653}.roster-nav-muted:hover{background:#1c2b3e;color:#dae5f2}
+@media(max-width:1000px){.phase-grid{grid-template-columns:1fr}}
