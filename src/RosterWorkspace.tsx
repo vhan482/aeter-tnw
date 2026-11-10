@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import './roster-workspace.css';
+import { AttendanceView, ActionCenterView } from './Phase3Workspace';
 
 type Role = 'GUILD_LEADER' | 'OFFICER' | 'CLERK';
 type Officer = { id:string; username:string; displayName:string; role:Role };
@@ -69,6 +70,7 @@ function Field({title,value,onChange}:{title:string;value:string|null;onChange:(
 export default function RosterWorkspace({officer,onSignOut,onManageOfficers,onExpired}:{
   officer:Officer;onSignOut:()=>void;onManageOfficers:()=>void;onExpired:()=>void
 }){
+  const [section,setSection]=useState<'members'|'attendance'|'actions'>('members');
   const [members,setMembers]=useState<Member[]>([]);
   const [total,setTotal]=useState(0);
   const [selectedId,setSelectedId]=useState<string|null>(null);
@@ -203,8 +205,15 @@ export default function RosterWorkspace({officer,onSignOut,onManageOfficers,onEx
     <aside className="roster-sidebar">
       <div className="roster-brand"><span className="roster-mark">⚔</span><div><strong>AETERNUM</strong><small>Guild Operations</small></div></div>
       <span className="roster-section-label">MANAGEMENT</span>
-      <div className="roster-nav-active">▦ <span>Member Registry</span></div>
-      <div className="roster-nav-muted">◷ <span>Attendance — upcoming</span></div>
+      <button type="button" className={section==='members'?'roster-nav-active':'roster-nav-muted'} onClick={()=>setSection('members')}>
+        ▦ <span>Member Registry</span>
+      </button>
+      <button type="button" className={section==='attendance'?'roster-nav-active':'roster-nav-muted'} onClick={()=>setSection('attendance')}>
+        ◷ <span>Attendance</span>
+      </button>
+      {officer.role!=='CLERK'&&<button type="button" className={section==='actions'?'roster-nav-active':'roster-nav-muted'} onClick={()=>setSection('actions')}>
+        ◈ <span>Member Action Center</span>
+      </button>}
       <div className="roster-nav-muted">⚒ <span>Mirror World — upcoming</span></div>
       <div className="roster-nav-muted">⚑ <span>Guild League — upcoming</span></div>
       <div className="roster-nav-muted">◈ <span>Guild Siege — upcoming</span></div>
@@ -215,6 +224,7 @@ export default function RosterWorkspace({officer,onSignOut,onManageOfficers,onEx
       </div>
     </aside>
     <main className="roster-main">
+      {section==='members'?<>
       <header className="roster-top">
         <div><span className="roster-eyebrow">GUILD COMMAND CENTER / ROSTER</span><h1>Member Registry</h1>
           <p>Server-backed members and verified weekly Gear Rating. No inferred scores.</p></div>
@@ -307,6 +317,8 @@ export default function RosterWorkspace({officer,onSignOut,onManageOfficers,onEx
             <button onClick={()=>{setShowImport(false);setApproval(false);}}>Cancel</button></div>
         </div>
       </div>}
+      </>:section==='attendance'?<AttendanceView officer={officer} onExpired={onExpired}/>:
+      <ActionCenterView officer={officer} onExpired={onExpired}/>}
     </main>
   </div>;
 }

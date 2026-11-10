@@ -59,3 +59,22 @@
 - Only the guild roster can be imported when the server roster is empty. Legacy screenshots and full record migration are **out of scope**.
 - The management API must retain the authenticated Officer/Clerk gate and the temporary-password guard.
 - Do not deploy or modify the Bastion/Inspector utility server before its separate security/capacity preflight.
+
+
+## Phase 3 development in progress (2026-11-11)
+
+- PR #3 merged and verified live: `aeternum.eleven22.io` exposes HTTPS, officer login, server-backed Member Registry and PostgreSQL 17 locally on the bastion.
+- Phase 3 feature branch: `feat/phase3-attendance-action-center`; **do not deploy until generated SQL migration + integration CI pass and PR is reviewed**.
+- New attendance types: GUILD_LEAGUE, HAZY_FOREST, GUILD_SIEGE; checkpoints BEFORE/DURING/AFTER; evidence coverage COMPLETE/PARTIAL/UNKNOWN; member statuses ONLINE/OFFLINE/UNKNOWN, no missing-row inference.
+- Leader/Officer may review assessments and confidential member-action cases; CLERK records raw checkpoints only. Never automatically assign AFK, AWOL or absence dispositions.
+- Screenshot/file evidence is a text reference only; no OCR or image upload in this PR.
+- User opted to skip backup/restore on the personal deployment, so **warn about potential irrecoverable data loss without blocking local development**. No destructive migrations and no unapproved VPS changes.
+
+
+## Screenshot retention direction — 2026-11-11
+
+- User selected **local Multer uploads**, **7-day retention** (not Google Docs); Google Drive remains optional later.
+- Upload is behind officer session + exact Origin validation. Use Multer >=2.5.0 (patched 2026 vulnerabilities), strict 5MB JPEG/PNG/WebP size/signature limits, 250MB total private storage budget, and at least 512MB free-disk buffer. No upload files under Nginx `/var/www`.
+- API private evidence records store SHA-256, original name, uploader, size, MIME, upload/expiry/deletion times. Files physically removed after seven days by a **separately installed systemd hourly timer**; historical metadata/checkpoint links remain.
+- On bastion: create `/var/lib/aeter/uploads` (owned by `aeter`, mode 0700); update aeter-api unit with `ReadWritePaths=/var/lib/aeter/uploads` if ProtectSystem=strict; set `UPLOAD_DIR=/var/lib/aeter/uploads` in API env; Nginx upload route limit >=6m. Install new cleanup unit/timer from docs. No live changes made during PR authoring.
+- Legacy filename-only references do not create a stored image or prove file existence. OCR/Drive uploads not implemented.

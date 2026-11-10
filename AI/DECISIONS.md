@@ -43,6 +43,15 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 | D-034 | Proposed | Optimistic version checks and audit trails for roster and weekly GR corrections | Avoid lost edits and retroactive history loss when officers work concurrently |
 | D-035 | Proposed | No inferred Gear Rating from unverified roster Rating column | GR requires an explicit reviewer acknowledgment and source filename/reference |
 
+| D-036 | Agreed | Phase 3 captures event-specific BEFORE/DURING/AFTER screenshot observations manually before OCR | Multiple captures per phase, explicit observations only; partial visibility does not equal offline |
+| D-037 | Proposed | Clerks capture raw observations; Leader/Officer alone can assess participation and access private action cases | Least privilege for personal explanations and disciplinary decisions; review with guild if permissions change |
+| D-038 | Agreed | AFK/AWOL follow-up cases are opened and decided manually, never generated from online/offline indicators | Respect unverified guild policy and evidence quality |
+| D-039 | Deferred by user | Off-server database backup/restore work on personal deployment | User chose to skip for now; server loss can permanently destroy attendance, cases and roster data |
+
+| D-040 | Agreed | Attendance screenshots use private Multer upload storage on the bastion, with seven-day byte retention | Simple, no Google API/OAuth; retain checksum/metadata and event references after deleting bytes |
+| D-041 | Agreed | Google Drive remains an optional later integration; Google Docs is not the media repository | Drive is purpose-built for private image objects; no immediate need for cloud integration |
+| D-042 | Proposed | Private file download requires officer session, file type signature verification and server-side quotas | Limit upload abuse and prevent a small 20 GB bastion disk from filling |
+
 ## New decision template
 
 ```markdown

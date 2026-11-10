@@ -1,6 +1,6 @@
 # Aeternum TNW — Product North Star
 
-> **Status:** Approved requirements; local API foundation merged, officer-only authentication in progress  
+> **Status:** Phase 2B merged and running on bastion; Phase 3 attendance/action work in development  
 > **Updated:** 2026-11-10 (Asia/Manila)  
 > **Repository:** https://github.com/vhan482/aeter-tnw  
 > **Game:** Ragnarok: The New World (TNW)  
@@ -22,11 +22,11 @@ Build a **cost-conscious, self-hosted guild operations and analytics dashboard**
 
 - **GitHub:** `vhan482/aeter-tnw`, public, `main`, with `NORTH_STAR.md`, `AGENTS.md`, and `AI/` documentation. Direct GitHub file writes were **successfully verified** by the 2026-10-23 `AI/HANDOFF.md` commit; the old 403 access issue is closed.
 - **Local frontend prototype:** React/Vite/TypeScript `src/App.tsx` with basic Members, Gear, Events, Attendance, Performance and Evidence CRUD, localStorage + IndexedDB, and ExcelJS import/export. **Prototype only**; browser storage is not a shared guild database. Existing import replaces browser records after a warning.
-- **Implementation status:** Yarn 4 + Express health/readiness and initial local PostgreSQL roster migrations were merged in PR #1. Officer-only authentication was merged in PR #2. **Not yet merged:** shared roster CRUD, Drive/Sheets sync, OCR, three-checkpoint attendance inference, Member Action Center, team planner, or VPS deployment.
-- **Hosting:** Bastion/Inspector utility VPS proposed; its SSH gateway function and limited resources require a fresh capacity/security review. Zulip is **not** the Aeternum hosting target.
+- **Implementation status:** Yarn 4 + Express health/readiness and initial local PostgreSQL roster migrations were merged in PR #1. Officer-only authentication was merged in PR #2. **Deployed:** PR #3 PostgreSQL roster/weekly GR, officer-only login and Nginx/HTTPS on the bastion, verified from live deployment logs and browser screenshot on November 11. **Not yet delivered:** Drive/Sheets sync, OCR, attendance capture, Member Action Center, and team planner.
+- **Hosting:** Deployed to Debian 13 Bastion/Inspector utility VPS with native PostgreSQL 17, systemd Express and Nginx HTTPS. Existing SSH management role makes network isolation, resource monitoring, MFA/access gate and host hardening outstanding tasks. Zulip is not the hosting target.
 - **Reference UI:** The RONW Guild Management Tool screenshots inspired future team planning and dashboard workflows. They are **design references, not Aeternum member data, licensed source code, or proof that those features exist here**.
 
-**Delivered:** [PR #1](https://github.com/vhan482/aeter-tnw/pull/1) was merged on 2026-11-10: Yarn 4, Express health/readiness, local PostgreSQL and tracked initial roster migrations. **Delivered:** Officer-only authentication PR #2 merged 2026-11-10. **In-flight:** PR #3 for shared member CRUD, verified weekly GR and one-time reviewed legacy roster import. No VPS deployment, event OCR or Drive/Sheets sync yet.
+**Delivered:** [PR #1](https://github.com/vhan482/aeter-tnw/pull/1) was merged on 2026-11-10: Yarn 4, Express health/readiness, local PostgreSQL and tracked initial roster migrations. **Delivered:** Officer-only authentication PR #2 merged 2026-11-10. **Delivered:** PR #3 merged; server-backed Member Registry and weekly GR running at https://aeternum.eleven22.io. **In-flight:** Phase 3 attended event/checkpoint recording and private officer casework. OCR, private Drive evidence storage and Sheets sync are not yet implemented.
 
 **Scope convention:** Sections 3.1–3.6 are the **core planned product**. Section 3.7 is an **approved future direction** after core workflows. Section 3.8 lists **deferred ideas**, not commitments. Exact implementation choices remain subject to tests and user review.
 
@@ -183,7 +183,7 @@ Each evidence item stores file checksum, event ID, original filename, capture ti
 | Automation | GitHub Actions for lint/tests/build; conservative deploy |
 | Charts | Recharts (proposed; not in starter yet) |
 
-**Hosting candidate (revised 2026-11-10):** the existing **HTG Bastion/Inspector utility VPS**, not Zulip. Prior inventory indicates **Debian 13 / 1 vCPU / ~2 GB RAM / 20 GB disk** with SSH gateway/inspection duties. This is materially smaller and has a sensitive management role: **deployment requires a fresh capacity/security assessment and explicit approval**. Keep OCR local, do not expose PostgreSQL, and avoid weakening bastion SSH controls. Develop/test locally first. Zulip stays untouched.
+**Current deployed host (verified 2026-11-11):** the existing **HTG Bastion/Inspector utility VPS**, not Zulip. Prior inventory indicates **Debian 13 / 1 vCPU / ~2 GB RAM / 20 GB disk** with SSH gateway/inspection duties. This is materially smaller and has a sensitive management role: **deployment requires a fresh capacity/security assessment and explicit approval**. Keep OCR local, do not expose PostgreSQL, and avoid weakening bastion SSH controls. Develop/test locally first. Zulip stays untouched.
 
 **Deployment gates:** back up and inspect the actual bastion host (CPU/RAM/disk, workloads, SSH gateway role, watchdog/inspection timers, firewall, available ports, swap and recovery). Assess whether running a web app on the bastion weakens the jump-host boundary; if so, choose another isolated target. Production needs private database networking, HTTPS, separate credentials/volumes, rollback and monitoring. **Do not modify Zulip or assume bastion deployment is approved.**
 
@@ -277,3 +277,19 @@ Every feature must include basic validation, authorization where relevant, dupli
 **Change log**
 - **2026-11-10:** Audited against verified repository state and later reference UI discussion; closed stale GitHub 403 note; acknowledged React-only prototype; added **future** Team Planner, deferred Auction/Polarity Zone, moved Attendance/Member Actions before complex performance OCR, and moved screenshot examples out of product policy.
 - **2026-10-23:** Initial requirements North Star consolidated from screenshot analysis, agreed workflows, cloud integration approach and VPS planning. Documenting plans **does not mean the application has been deployed**.
+
+
+## Phase 3 implementation note — 2026-11-11
+
+- `feat/phase3-attendance-action-center` records separate occurrence, checkpoint, explicit member observations and officer assessments. **No automatic inference of absence from missing screenshot rows.**
+- Roles: Clerks may record event checkpoints and reviewed online/offline/unknown observations. Only Guild Leaders and Officers can read/write final assessment rationale and private Member Action Center cases, reports and audit history.
+- Checkpoint evidence is currently a **filename/reference only**. Local file storage, Drive uploads, OCR and hash validation remain future work.
+- Cases, notes and officer decisions are **manual and private**, with append-only change timelines. AWOL/AFK policy remains unverified.
+- The user intentionally deferred backup/restore setup for this personal deployment. This is a risk acceptance, **not** assurance of recoverability; avoid destructive migrations and keep SSH/bastion operations untouched during feature development.
+
+
+### Phase 3 screenshot retention (agreed 2026-11-11)
+
+Use temporary local screenshot storage instead of Google Docs or immediately building Google Drive OAuth. The private upload directory is outside Nginx's web root. HTTP uploads use Multer 2.5.0 or newer patched release, 5MB/file, JPEG/PNG/WebP signature validation, ~250MB aggregate limit, and an explicit disk-space safety buffer. Authorized officers/clerks can view images only through authenticated API endpoints. Files **automatically expire seven days after upload**; an hourly cleanup service removes bytes, while event links, filenames, checksums and review records remain in PostgreSQL with an "expired" status. Filenames are not proof that an upload exists. No OCR extraction and no public direct image URL.
+
+Privacy trade-off: loss of screenshot bytes after a week removes later re-review capability; keep this visible in the UI. User deferred database backup/restore for this personal project; therefore a VPS failure can still irreversibly lose record metadata and private casework. Google Drive can be reconsidered if longer audit retention becomes necessary.

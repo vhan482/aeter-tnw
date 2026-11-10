@@ -22,8 +22,8 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Local Docker Compose with isolated PostgreSQL + Drizzle/SQL migrations, no public DB port.
 - [x] Officer-only authentication merged in PR #2: Argon2id hashes, server-side sessions, bootstrap Leader, Leader-managed accounts, strict origin checks, login tests and audit events.
 - [ ] Design per-module permission policy before exposing Member Action Center reasons or exports.
-- [ ] PR #3: connect authenticated server-backed roster CRUD, optimistic locking, aliases and GR snapshot corrections with audit history.
-- [ ] PR #3: one-time reviewed import of **legacy member profiles only**, only into an empty server roster, preserving legacy ID mapping and browser records.
+- [x] PR #3 merged: authenticated server-backed roster CRUD, optimistic locking, aliases and GR correction history.
+- [x] PR #3 merged: reviewed, one-time legacy roster-only import (manual browser testing still needed before actual imports).
 - [ ] Migrate other browser data (Gear/Events/Attendance/Performance/Evidence) through separately designed, reviewed flows; no silent import or cross-member mapping.
 - [ ] GitHub Actions lint/typecheck/test and reproducible build.
 
@@ -34,11 +34,12 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Enforce missing/unverified GR as NULL, not a copied or assumed value.
 
 ## P3 — Attendance / Member Action Center
-- [ ] BEFORE / DURING / AFTER screenshot observations for Guild League, Hazy Forest and Guild Siege.
-- [ ] Multi-page roster coverage check; unknown ≠ offline and online ≠ participation.
-- [ ] Evidence-based attendance assessment and officer confirmation.
-- [ ] Member-reported reasons kept separate from officer comments and decisions.
-- [ ] AFK/AWOL follow-up queue, action history, role-gated privacy and handover.
+- [ ] Phase 3 PR: BEFORE / DURING / AFTER checkpoint references and explicit reviewed ONLINE/OFFLINE/UNKNOWN observations; migration/tests pending.
+- [ ] Phase 3: multiple screenshot references per phase, coverage labels; unknown ≠ offline and online ≠ participation.
+- [ ] Add 7-day local image retention with private authenticated viewing, size/format limits, content signature validation, hourly cleanup timer and expiry state.
+- [ ] Phase 3 PR: evidence-constrained participation assessment and officer confirmation; tests pending.
+- [ ] Phase 3 PR: distinct member reports and officer notes with source/time and immutable audit.
+- [ ] Phase 3 PR: manually initiated AFK/AWOL follow-up queue, audit, officer-only access and manual handover.
 - [ ] Attendance review and private export authorization tests.
 
 ## P4 — Performance screenshots (incremental)
@@ -57,7 +58,7 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Private Google Drive OAuth and screenshot evidence storage.
 - [ ] Google Sheets approved export and diff/validate/approve import.
 - [ ] Benchmark local OpenCV/Tesseract OCR accuracy on real labeled samples; PaddleOCR optional.
-- [ ] Encrypted offsite PostgreSQL backups + tested restore.
+- [ ] Deferred by user for personal use: encrypted offsite PostgreSQL backups and tested restore. Data-loss risk remains.
 
 ### Bastion/utility VPS pre-deployment gate — do not skip
 - [ ] Verify a recent restorable backup, SSH and OVH console access.

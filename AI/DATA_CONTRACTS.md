@@ -1,6 +1,6 @@
 # Data Contracts, Units and Domain Invariants
 
-This document describes **planned** contracts, not implemented database migrations.
+This document describes domain rules; member/GR contracts are implemented, while Phase 3 checkpoint/case contracts are in a feature PR until merged.
 
 ## Cross-cutting conventions
 
@@ -10,7 +10,7 @@ This document describes **planned** contracts, not implemented database migratio
 - Source values and normalized numbers are stored together (`raw_display`, `normalized_value`, `normalization_precision` or approximation flag).
 - Missing value is `NULL` (unknown), **not 0**. Zero only if the UI explicitly displays zero or reviewer verifies it.
 - Use `BIGINT` or suitable NUMERIC types for enormous accumulated damage; avoid 32-bit integer overflow.
-- Screenshot evidence requires hash/file ID and review status. A single screenshot is allowed to support many player rows; many screenshots can support one player row.
+- Future stored screenshot evidence requires hash/file ID and review status. Phase 3 currently stores filename/reference only, not binary proof. A single screenshot is allowed to support many player rows; many screenshots can support one player row.
 - One member's same-event/battlefield/team stats are consolidated, with per-tab provenance.
 
 ## Weekly GR
@@ -59,7 +59,7 @@ Fields: event/member/guild position; kills, deaths, assists; damage taken, heali
 Checkpoint keys: `(event_id, checkpoint: BEFORE|DURING|AFTER, captured_at, evidence_id)`.
 Observation keys: `(checkpoint_id, member_id)` with status `ONLINE|OFFLINE|UNKNOWN`.
 
-Final assessments can be `CONFIRMED_PARTICIPATED`, `LIKELY_PRESENT`, `LIKELY_ABSENT`, `NEEDS_REVIEW`; officer outcomes `EXCUSED|UNEXCUSED|RESOLVED` are separately recorded. Store rationale and reviewer. No screenshot absence inference.
+Officer-reviewed assessments can be `CONFIRMED_PARTICIPATED`, `LIKELY_PRESENT`, `LIKELY_ABSENT`, `NEEDS_REVIEW`; officer outcomes `EXCUSED|UNEXCUSED|RESOLVED` are separately recorded. Store rationale and reviewer. No screenshot absence inference.
 
 ## Officer action center
 
