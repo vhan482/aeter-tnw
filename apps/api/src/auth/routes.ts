@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { officerAccounts, officerSessions, officerAudit } from '../db/schema.js';
 import type { ApiConfig } from '../config.js';
 import { hashPassword, verifyPassword, PASSWORD_MIN } from './password.js';
+import { registerRosterRoutes } from '../roster/routes.js';
 
 type Role = 'GUILD_LEADER' | 'OFFICER' | 'CLERK';
 type Officer = {
@@ -246,7 +247,9 @@ export function registerAuthRoutes(app: Express, pool: pg.Pool, config: ApiConfi
     res.status(204).end();
   }));
 
-  // Central mount for future roster/attendance routes; they MUST authenticate first.
+  registerRosterRoutes(app, pool, { authenticate, ready, csrf });
+
+  // Keep every future management route behind authentication, even if unimplemented.
   app.use('/api/management', authenticate, ready, (_req, res) =>
     res.status(404).json({ error: 'Management endpoint not implemented' }));
 }

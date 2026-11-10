@@ -38,6 +38,11 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 | D-030 | Proposed | Password login uses Argon2id + opaque PostgreSQL-backed HttpOnly sessions | Low-cost local auth with revocation; 12-hour absolute sessions, per-IP login limits and strict origin checks |
 | D-031 | Agreed | Prototype browser data must not be mistaken for shared/private server records | Login gate is UI access; migrate existing localStorage/IndexedDB data after authenticated CRUD and review exist |
 
+| D-032 | Proposed | Server-backed roster is the default officer workspace | Do not present browser-only CRUD as the shared database |
+| D-033 | Proposed | One-time reviewed legacy roster-only import into an empty PostgreSQL roster | Preserve legacy-ID mapping; no automatic merging with existing members or migration of gear/evidence |
+| D-034 | Proposed | Optimistic version checks and audit trails for roster and weekly GR corrections | Avoid lost edits and retroactive history loss when officers work concurrently |
+| D-035 | Proposed | No inferred Gear Rating from unverified roster Rating column | GR requires an explicit reviewer acknowledgment and source filename/reference |
+
 ## New decision template
 
 ```markdown

@@ -20,9 +20,11 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Preserve/reuse working React components as applicable; introduce Tailwind/shadcn only after checking existing behavior.
 - [ ] Initialize Express/TS, health endpoint and Zod validation.
 - [ ] Local Docker Compose with isolated PostgreSQL + Drizzle/SQL migrations, no public DB port.
-- [ ] Review/merge officer-only authentication PR: Argon2id hashes, server-side sessions, bootstrap Leader, Leader-managed accounts, strict origin checks, login tests and audit events.
+- [x] Officer-only authentication merged in PR #2: Argon2id hashes, server-side sessions, bootstrap Leader, Leader-managed accounts, strict origin checks, login tests and audit events.
 - [ ] Design per-module permission policy before exposing Member Action Center reasons or exports.
-- [ ] Connect authenticated roster CRUD to API and migrate existing browser data through a reviewed import (backup/export first).
+- [ ] PR #3: connect authenticated server-backed roster CRUD, optimistic locking, aliases and GR snapshot corrections with audit history.
+- [ ] PR #3: one-time reviewed import of **legacy member profiles only**, only into an empty server roster, preserving legacy ID mapping and browser records.
+- [ ] Migrate other browser data (Gear/Events/Attendance/Performance/Evidence) through separately designed, reviewed flows; no silent import or cross-member mapping.
 - [ ] GitHub Actions lint/typecheck/test and reproducible build.
 
 ## P2 — Member roster + weekly GR
