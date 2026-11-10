@@ -5,6 +5,7 @@ const configSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(3001),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   APP_ORIGIN: z.string().url().default('http://127.0.0.1:5173'),
+  UPLOAD_DIR: z.string().min(1).default('/var/lib/aeter/uploads'),
   DATABASE_URL: z.string().url().refine(
     value => value.startsWith('postgresql://') || value.startsWith('postgres://'),
     { message: 'Must be a PostgreSQL connection URL' }

@@ -102,17 +102,36 @@ export const attendanceEvents = pgTable('attendance_events', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 }, table => [index('attendance_events_starts_idx').on(table.startsAt)]);
 
+/** Private raw screenshot retention metadata; file bytes removed after seven days. */
+export const attendanceEvidence = pgTable('attendance_evidence', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  storedName: varchar('stored_name', { length: 64 }).notNull().unique(),
+  originalName: varchar('original_name', { length: 160 }).notNull(),
+  mimeType: varchar('mime_type', { length: 40 }).notNull(),
+  bytes: integer('bytes').notNull(),
+  sha256: varchar('sha256', { length: 64 }).notNull(),
+  uploadedBy: uuid('uploaded_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  deletedAt: timestamp('deleted_at', { withTimezone: true })
+}, table => [
+  index('attendance_evidence_expires_idx').on(table.expiresAt),
+  index('attendance_evidence_deleted_idx').on(table.deletedAt)
+]);
+
 export const attendanceCheckpoints = pgTable('attendance_checkpoints', {
   id: uuid('id').primaryKey().defaultRandom(),
   eventId: uuid('event_id').notNull().references(() => attendanceEvents.id, { onDelete: 'restrict' }),
   phase: varchar('phase', { length: 12 }).notNull(), // BEFORE | DURING | AFTER
   capturedAt: timestamp('captured_at', { withTimezone: true }).notNull(),
   evidenceRef: varchar('evidence_ref', { length: 255 }).notNull(),
+  evidenceUploadId: uuid('evidence_upload_id').references(() => attendanceEvidence.id, { onDelete: 'restrict' }),
   coverage: varchar('coverage', { length: 12 }).notNull(), // COMPLETE | PARTIAL | UNKNOWN
   createdBy: uuid('created_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 }, table => [
   index('attendance_checkpoints_event_idx').on(table.eventId),
+  uniqueIndex('attendance_checkpoint_evidence_uidx').on(table.evidenceUploadId),
   uniqueIndex('attendance_checkpoint_source_uidx').on(table.eventId, table.phase, table.capturedAt, table.evidenceRef)
 ]);
 
