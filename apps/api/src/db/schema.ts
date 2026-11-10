@@ -1,7 +1,7 @@
 import { boolean, date, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
-// Initial roster slice only. Do not import screenshot/attendance/disciplinary data into these tables.
+// Incremental guild operations schema. Never replace or reinitialize deployed roster tables.
 export const members = pgTable('members', {
   id: uuid('id').primaryKey().defaultRandom(),
   characterName: varchar('character_name', { length: 128 }).notNull(),
@@ -91,3 +91,109 @@ export const memberChanges = pgTable('member_changes', {
   changes: jsonb('changes').$type<Record<string, unknown>>().notNull(),
   changedAt: timestamp('changed_at', { withTimezone: true }).notNull().defaultNow()
 }, table => [index('member_changes_member_idx').on(table.memberId)]);
+
+/** Phase 3: event occurrences are independent of Mirror World and other future performance tables. */
+export const attendanceEvents = pgTable('attendance_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  eventType: varchar('event_type', { length: 24 }).notNull(), // GUILD_LEAGUE | HAZY_FOREST | GUILD_SIEGE
+  title: varchar('title', { length: 160 }).notNull(),
+  startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+  createdBy: uuid('created_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [index('attendance_events_starts_idx').on(table.startsAt)]);
+
+export const attendanceCheckpoints = pgTable('attendance_checkpoints', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  eventId: uuid('event_id').notNull().references(() => attendanceEvents.id, { onDelete: 'restrict' }),
+  phase: varchar('phase', { length: 12 }).notNull(), // BEFORE | DURING | AFTER
+  capturedAt: timestamp('captured_at', { withTimezone: true }).notNull(),
+  evidenceRef: varchar('evidence_ref', { length: 255 }).notNull(),
+  coverage: varchar('coverage', { length: 12 }).notNull(), // COMPLETE | PARTIAL | UNKNOWN
+  createdBy: uuid('created_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [
+  index('attendance_checkpoints_event_idx').on(table.eventId),
+  uniqueIndex('attendance_checkpoint_source_uidx').on(table.eventId, table.phase, table.capturedAt, table.evidenceRef)
+]);
+
+/** Explicit member status only; no row means NOT OBSERVED, never OFFLINE. */
+export const attendanceObservations = pgTable('attendance_observations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  checkpointId: uuid('checkpoint_id').notNull().references(() => attendanceCheckpoints.id, { onDelete: 'restrict' }),
+  memberId: uuid('member_id').notNull().references(() => members.id, { onDelete: 'restrict' }),
+  status: varchar('status', { length: 12 }).notNull(), // ONLINE | OFFLINE | UNKNOWN
+  reviewedBy: uuid('reviewed_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  version: integer('version').notNull().default(1),
+  reviewedAt: timestamp('reviewed_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [uniqueIndex('attendance_observation_member_uidx').on(table.checkpointId, table.memberId)]);
+
+export const attendanceObservationCorrections = pgTable('attendance_observation_corrections', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  observationId: uuid('observation_id').notNull().references(() => attendanceObservations.id, { onDelete: 'restrict' }),
+  beforeStatus: varchar('before_status', { length: 12 }).notNull(),
+  afterStatus: varchar('after_status', { length: 12 }).notNull(),
+  reason: text('reason').notNull(),
+  correctedBy: uuid('corrected_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  correctedAt: timestamp('corrected_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [index('attendance_observation_history_idx').on(table.observationId)]);
+
+/** Officer judgment is separate from observed online status. */
+export const attendanceAssessments = pgTable('attendance_assessments', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  eventId: uuid('event_id').notNull().references(() => attendanceEvents.id, { onDelete: 'restrict' }),
+  memberId: uuid('member_id').notNull().references(() => members.id, { onDelete: 'restrict' }),
+  assessment: varchar('assessment', { length: 32 }).notNull(),
+  rationale: text('rationale').notNull(),
+  verificationMethod: varchar('verification_method', { length: 24 }),
+  evidenceRef: varchar('evidence_ref', { length: 255 }),
+  reviewedBy: uuid('reviewed_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  version: integer('version').notNull().default(1),
+  reviewedAt: timestamp('reviewed_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [uniqueIndex('attendance_assessment_member_uidx').on(table.eventId, table.memberId)]);
+
+export const attendanceAssessmentHistory = pgTable('attendance_assessment_history', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  assessmentId: uuid('assessment_id').notNull().references(() => attendanceAssessments.id, { onDelete: 'restrict' }),
+  before: jsonb('before').$type<Record<string, unknown>>(),
+  after: jsonb('after').$type<Record<string, unknown>>().notNull(),
+  changedBy: uuid('changed_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  changedAt: timestamp('changed_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [index('attendance_assessment_history_idx').on(table.assessmentId)]);
+
+/** Restricted to GUILD_LEADER/OFFICER; clerks cannot list or retrieve these private records. */
+export const memberActionCases = pgTable('member_action_cases', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  memberId: uuid('member_id').notNull().references(() => members.id, { onDelete: 'restrict' }),
+  eventId: uuid('event_id').references(() => attendanceEvents.id, { onDelete: 'restrict' }),
+  caseType: varchar('case_type', { length: 24 }).notNull(),
+  status: varchar('status', { length: 24 }).notNull().default('OPEN'),
+  assignedOfficerId: uuid('assigned_officer_id').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  followUpOn: date('follow_up_on'),
+  officerDetermination: text('officer_determination'),
+  createdBy: uuid('created_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  version: integer('version').notNull().default(1),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [index('member_action_cases_status_idx').on(table.status),
+  index('member_action_cases_member_idx').on(table.memberId)]);
+
+export const memberActionNotes = pgTable('member_action_notes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  caseId: uuid('case_id').notNull().references(() => memberActionCases.id, { onDelete: 'restrict' }),
+  kind: varchar('kind', { length: 24 }).notNull(), // MEMBER_REPORT | OFFICER_NOTE
+  content: text('content').notNull(),
+  source: varchar('source', { length: 160 }), // where a reported reason came from
+  reportedAt: timestamp('reported_at', { withTimezone: true }),
+  authorId: uuid('author_id').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [index('member_action_notes_case_idx').on(table.caseId)]);
+
+export const memberActionAudit = pgTable('member_action_audit', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  caseId: uuid('case_id').notNull().references(() => memberActionCases.id, { onDelete: 'restrict' }),
+  action: varchar('action', { length: 32 }).notNull(),
+  before: jsonb('before').$type<Record<string, unknown>>(),
+  after: jsonb('after').$type<Record<string, unknown>>().notNull(),
+  actorId: uuid('actor_id').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [index('member_action_audit_case_idx').on(table.caseId)]);
