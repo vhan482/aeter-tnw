@@ -1,26 +1,38 @@
 import express from 'express';
+import helmet from 'helmet';
+import type pg from 'pg';
+import { registerAuthRoutes } from './auth/routes.js';
+import type { ApiConfig } from './config.js';
 
-export type DatabaseProbe = { query: (statement: string) => Promise<unknown> };
-
-export function createApp(database: DatabaseProbe) {
+export function createApp(pool: pg.Pool, config: ApiConfig) {
   const app = express();
   app.disable('x-powered-by');
-  app.use(express.json({ limit: '128kb' }));
+  // Only trust forwarding headers supplied by a loopback reverse proxy.
+  // Never use unconditional trust proxy on public interfaces.
+  app.set('trust proxy', 'loopback');
+  app.use(helmet());
+  app.use(express.json({ limit: '32kb' }));
 
-  // Liveness does not expose database or credential details.
+  // Only known browser origin may mutate API state, including login/logout.
+  // No CORS is enabled: the web UI communicates through same-origin /api proxy.
+  registerAuthRoutes(app, pool, config);
+
   app.get('/api/health', (_req, res) => res.json({ status: 'ok', service: 'aeter-api' }));
-
-  // Readiness checks whether this API can reach its own PostgreSQL database.
   app.get('/api/ready', async (_req, res) => {
     try {
-      await database.query('select 1');
+      await pool.query('select 1');
       res.json({ status: 'ready' });
     } catch {
       res.status(503).json({ status: 'unavailable' });
     }
   });
 
-  // No member endpoints until authentication and role checks are implemented.
   app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
+  app.use((error: unknown, _req: express.Request, res: express.Response,
+    _next: express.NextFunction) => {
+    // Never echo thrown SQL errors, tokens, credentials, or request content.
+    console.error('[aeter-api] unexpected request failure', error instanceof Error ? error.name : 'unknown');
+    res.status(500).json({ error: 'Internal server error' });
+  });
   return app;
 }

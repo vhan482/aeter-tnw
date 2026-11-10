@@ -29,7 +29,10 @@ function Kpi({title,value,icon:Icon,foot}:{title:string;value:string|number;icon
   return <div className="kpi"><div className="kpi-head"><span>{title}</span><Icon size={18}/></div><strong>{value}</strong><small>{foot}</small></div>;
 }
 
-export default function App(){
+export default function App({officer,onSignOut,onManageOfficers}:{
+  officer:{username:string;displayName:string;role:string};
+  onSignOut:()=>void;onManageOfficers:()=>void
+}){
   const [data,setData]=useState<GuildData>(()=>load());
   const [page,setPage]=useState<Page>('Dashboard');
   const [query,setQuery]=useState('');
@@ -118,7 +121,12 @@ export default function App(){
       <div className="brand"><div className="brand-icon"><Swords size={21}/></div><div><b>TNW <span>GUILD OPS</span></b><small>Operations command center</small></div></div>
       <div className="side-label">WORKSPACE</div>
       <nav>{NAV.map(({name,icon:Icon})=><button key={name} className={`nav ${page===name?'current':''}`} onClick={()=>go(name)}><Icon size={17}/><span>{name==='Gear'?'Equipment':name}</span>{name==='Evidence'&&pending>0?<em>{pending}</em>:null}</button>)}</nav>
-      <div className="side-bottom"><div className="local-label"><ShieldCheck size={16}/> Local-first workspace</div><p>Records stay in this browser until you export or deploy a shared backend.</p><div className="side-version">TNW Ops · MVP 0.1</div></div>
+      <div className="side-bottom"><div className="officer-session-pane">
+        <small>Signed in as</small><strong>{officer.displayName}</strong>
+        <span>{officer.role} · @{officer.username}</span>
+        {officer.role==='GUILD_LEADER'&&<button onClick={onManageOfficers}>Manage officers</button>}
+        <button onClick={onSignOut}>Sign out</button>
+      </div><div className="local-label"><ShieldCheck size={16}/> Local-first workspace</div><p>Records stay in this browser until you export or deploy a shared backend.</p><div className="side-version">TNW Ops · MVP 0.1</div></div>
     </aside>
     <div className="content">
       <header className="topbar"><div className="crumb">GUILD MANAGEMENT <span>/</span> {page.toUpperCase()}</div><div className="toolbar"><input ref={importRef} className="hidden" type="file" accept=".xlsx" onChange={e=>void importExcel(e.target.files?.[0])}/><button className="btn secondary" onClick={()=>importRef.current?.click()}><ArrowUpFromLine size={16}/> Import Excel</button><button className="btn primary" onClick={()=>void exportExcel()}><ArrowDownToLine size={16}/> Export .xlsx</button></div></header>

@@ -1,8 +1,9 @@
-name: Yarn foundation checks
+name: Yarn foundation and officer authentication
 on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -32,21 +33,22 @@ jobs:
       - run: corepack enable
       - run: yarn install --immutable
       - run: yarn typecheck
-      - run: yarn test
       - run: yarn build
-      - name: Verify tracked Drizzle migrations against PostgreSQL 17
+      - name: Apply tracked Drizzle migrations to isolated PostgreSQL
         run: yarn workspace @aeter/api db:migrate
         env:
           DATABASE_URL: postgresql://ci:ci_only_for_tests@127.0.0.1:55432/aeter_ci
-      - name: API health and database readiness smoke test
+      - name: Run unit and officer auth integration tests
+        run: yarn test
+        env:
+          AUTH_TEST_DATABASE_URL: postgresql://ci:ci_only_for_tests@127.0.0.1:55432/aeter_ci
+      - name: Verify API health and database readiness
         shell: bash
         env:
           DATABASE_URL: postgresql://ci:ci_only_for_tests@127.0.0.1:55432/aeter_ci
-          HOST: 127.0.0.1
-          PORT: '3001'
         run: |
           yarn workspace @aeter/api start > /tmp/aeter-api.log 2>&1 &
-          api_pid=$!
-          trap 'kill "$api_pid" 2>/dev/null || true' EXIT
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
           curl --retry 20 --retry-delay 1 --retry-connrefused --fail --silent http://127.0.0.1:3001/api/health | grep -q '"status":"ok"'
           curl --fail --silent http://127.0.0.1:3001/api/ready | grep -q '"status":"ready"'

@@ -1,6 +1,6 @@
 # Aeternum TNW — Product North Star
 
-> **Status:** Approved requirements + local frontend prototype; shared backend not implemented  
+> **Status:** Approved requirements; local API foundation merged, officer-only authentication in progress  
 > **Updated:** 2026-11-10 (Asia/Manila)  
 > **Repository:** https://github.com/vhan482/aeter-tnw  
 > **Game:** Ragnarok: The New World (TNW)  
@@ -22,11 +22,11 @@ Build a **cost-conscious, self-hosted guild operations and analytics dashboard**
 
 - **GitHub:** `vhan482/aeter-tnw`, public, `main`, with `NORTH_STAR.md`, `AGENTS.md`, and `AI/` documentation. Direct GitHub file writes were **successfully verified** by the 2026-10-23 `AI/HANDOFF.md` commit; the old 403 access issue is closed.
 - **Local frontend prototype:** React/Vite/TypeScript `src/App.tsx` with basic Members, Gear, Events, Attendance, Performance and Evidence CRUD, localStorage + IndexedDB, and ExcelJS import/export. **Prototype only**; browser storage is not a shared guild database. Existing import replaces browser records after a warning.
-- **Not verified as implemented:** Express API, PostgreSQL schema or service, shared authentication, private Google Drive/Sheets integration, automated OCR, three-checkpoint attendance inference, Member Action Center, team planner, and VPS deployment.
-- **Hosting:** OVH control panel previously showed an upgrade to **2 vCores / 8 GB / 80 GB** for the Zulip VPS; guest-OS resources, filesystem and existing service health have not yet been reverified in this project. **Do not reboot or modify Zulip as part of documentation cleanup.**
+- **Implementation status:** Yarn 4 + Express health/readiness and initial local PostgreSQL roster migrations were merged in PR #1. Officer-only authentication is in PR #2 (not merged). **Not implemented:** shared roster CRUD, Drive/Sheets sync, OCR, three-checkpoint attendance inference, Member Action Center, team planner, or VPS deployment.
+- **Hosting:** Bastion/Inspector utility VPS proposed; its SSH gateway function and limited resources require a fresh capacity/security review. Zulip is **not** the Aeternum hosting target.
 - **Reference UI:** The RONW Guild Management Tool screenshots inspired future team planning and dashboard workflows. They are **design references, not Aeternum member data, licensed source code, or proof that those features exist here**.
 
-**In-flight:** Draft [PR #1](https://github.com/vhan482/aeter-tnw/pull/1) introduces Yarn 4, Express health/readiness, local PostgreSQL and an initial tracked roster schema/migration. It is **not merged**, does not provide authenticated CRUD, and has not deployed to any VPS.
+**Delivered:** [PR #1](https://github.com/vhan482/aeter-tnw/pull/1) was merged on 2026-11-10: Yarn 4, Express health/readiness, local PostgreSQL and tracked initial roster migrations. **In-flight:** officer-only authentication (this PR); no VPS deployment, shared roster CRUD, OCR or Drive/Sheets sync yet.
 
 **Scope convention:** Sections 3.1–3.6 are the **core planned product**. Section 3.7 is an **approved future direction** after core workflows. Section 3.8 lists **deferred ideas**, not commitments. Exact implementation choices remain subject to tests and user review.
 
@@ -189,7 +189,7 @@ Each evidence item stores file checksum, event ID, original filename, capture ti
 
 **Safety:** keep Postgres 5432 private on IPv4 **and IPv6**, application secrets outside Git, least privilege, HTTPS, backup+restore rehearsals and protected OAuth refresh credentials. No OCR-heavy background worker on the shared 2-vCore VPS at MVP stage.
 
-**Suggested roles:** `GUILD_LEADER`, `OFFICER`, `CLERK`, `MEMBER` (final access matrix TBD). Do not expose sensitive officer comments to all roles.
+**Agreed access model (2026-11-10):** management app logins are **officers only**: `GUILD_LEADER`, `OFFICER`, `CLERK` (clerk is an explicitly approved guild-operations role). Ordinary guild members do **not** have management access or a self-registration path. First Guild Leader account is created securely via console/bootstrap; the Leader provisions, resets and disables officer accounts. Private explanations remain limited to authorized roles; fine-grained permissions require review before Member Action Center rollout.
 
 ## 6. Logical data entities (design targets; not migrations yet)
 

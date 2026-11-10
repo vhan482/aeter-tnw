@@ -6,7 +6,7 @@ React + TypeScript **local/browser-only prototype** for Ragnarok: The New World 
 
 ## Development foundation (Yarn)
 
-This repo is migrating toward a Yarn workspace model and local Express/PostgreSQL foundation. Start with [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md). **No shared backend is currently deployed, and the original browser prototype still stores its own data locally.** Production hosting is now being evaluated on the Bastion/Inspector utility VPS (not Zulip), pending security and capacity review.
+This repo uses Yarn workspaces and a local Express/PostgreSQL foundation. Officer-only authentication is being added on a feature branch. Start with [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md). **No shared backend is deployed; the original browser prototype still stores its data locally. The new login gate does not change this.** Production hosting is now being evaluated on the Bastion/Inspector utility VPS (not Zulip), pending security and capacity review.
 
 ## Run locally
 

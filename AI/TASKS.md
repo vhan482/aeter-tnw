@@ -6,7 +6,7 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [x] React/Vite/TypeScript browser-based CRUD prototype committed (Members, Gear, Events, Attendance, Performance, Evidence).
 - [x] ExcelJS import/export and localStorage/IndexedDB behavior implemented in the prototype.
 - [x] Root AGENTS / North Star / AI folder committed; GitHub read/write verified with a commit.
-- [ ] Verify a clean install/build of the starter, including typecheck, before modifying UI flows.
+- [x] Verify initial Yarn foundation typecheck/build/migration and API readiness in PR #1 CI.
 
 ## P0 — Planning cleanup (local work; no VPS changes)
 - [x] Update North Star from October 2026 to November 2026, including the future Team Planner and deferred ideas.
@@ -15,13 +15,14 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Baseline code/test readiness, then choose incremental backend integration rather than a destructive rewrite.
 
 ## P1 — Local backend foundation
-- [ ] Verify CI's immutable install, migration run, API readiness smoke test and local developer setup for PR #1.
-- [x] Create Yarn 4 workspace foundation, lockfile, local PostgreSQL Compose definition, API health/readiness scaffold and initial generated Drizzle migration (draft PR #1; merge pending).
+- [x] Verify CI's immutable install, migration run and API readiness smoke test for merged PR #1 (local developer setup still needs verification).
+- [x] Create Yarn 4 workspace foundation, lockfile, local PostgreSQL Compose definition, API health/readiness scaffold and initial generated Drizzle migration (PR #1 merged).
 - [ ] Preserve/reuse working React components as applicable; introduce Tailwind/shadcn only after checking existing behavior.
 - [ ] Initialize Express/TS, health endpoint and Zod validation.
 - [ ] Local Docker Compose with isolated PostgreSQL + Drizzle/SQL migrations, no public DB port.
-- [ ] Local authentication, roles, sessions and audit logging.
-- [ ] API ↔ UI integration with safe migration from existing browser data (backup/export first).
+- [ ] Review/merge officer-only authentication PR: Argon2id hashes, server-side sessions, bootstrap Leader, Leader-managed accounts, strict origin checks, login tests and audit events.
+- [ ] Design per-module permission policy before exposing Member Action Center reasons or exports.
+- [ ] Connect authenticated roster CRUD to API and migrate existing browser data through a reviewed import (backup/export first).
 - [ ] GitHub Actions lint/typecheck/test and reproducible build.
 
 ## P2 — Member roster + weekly GR
