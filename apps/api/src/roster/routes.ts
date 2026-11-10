@@ -24,24 +24,28 @@ const memberFields = z.object({
 }).strict();
 const updateFields = memberFields.partial().extend({ version: z.number().int().min(1) }).strict()
   .refine(data => Object.keys(data).some(key => key !== 'version'), { message: 'No changes provided' });
-const grBody = z.object({
+const grShape = z.object({
   weekStart: isoDate,
   gearRating: z.number().int().min(1).max(2_000_000_000).nullable(),
   sourceReference: optionalText(255).default(null),
   verified: z.boolean(),
   capturedAt: z.string().datetime({ offset: true }).nullable().default(null)
-}).strict().superRefine((data, ctx) => {
+}).strict();
+function validateVerifiedGr(
+  data: { gearRating: number | null; verified: boolean; sourceReference: string | null },
+  ctx: z.RefinementCtx
+) {
   if (data.gearRating !== null && (!data.verified || !data.sourceReference)) {
     ctx.addIssue({ code: 'custom', message: 'Verified GR requires a reviewed source reference', path: ['sourceReference'] });
   }
   if (data.gearRating === null && data.verified) {
     ctx.addIssue({ code: 'custom', message: 'Unknown GR cannot be verified', path: ['verified'] });
   }
-});
-const correctionBody = grBody.omit({ weekStart: true }).extend({
-  version: z.number().int().min(1),
-  reason: z.string().trim().min(5).max(1000)
-}).strict();
+}
+const grBody = grShape.superRefine(validateVerifiedGr);
+const correctionBody = grShape.omit({ weekStart: true })
+  .extend({ version: z.number().int().min(1), reason: z.string().trim().min(5).max(1000) })
+  .strict().superRefine(validateVerifiedGr);
 const importMember = memberFields.extend({ legacyId: z.string().trim().min(1).max(80) }).strict();
 const importBatch = z.object({ members: z.array(importMember).min(1).max(250) }).strict();
 const uuid = z.string().uuid();
