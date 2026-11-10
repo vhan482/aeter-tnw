@@ -15,6 +15,7 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Baseline code/test readiness, then choose incremental backend integration rather than a destructive rewrite.
 
 ## P1 — Local backend foundation
+- [x] Create Yarn 4 workspace foundation, local PostgreSQL Compose definition, API health/readiness scaffold (pending clean install/build tests and lockfile).
 - [ ] Preserve/reuse working React components as applicable; introduce Tailwind/shadcn only after checking existing behavior.
 - [ ] Initialize Express/TS, health endpoint and Zod validation.
 - [ ] Local Docker Compose with isolated PostgreSQL + Drizzle/SQL migrations, no public DB port.
@@ -54,13 +55,13 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Benchmark local OpenCV/Tesseract OCR accuracy on real labeled samples; PaddleOCR optional.
 - [ ] Encrypted offsite PostgreSQL backups + tested restore.
 
-### VPS pre-deployment gate — do not skip
+### Bastion/utility VPS pre-deployment gate — do not skip
 - [ ] Verify a recent restorable backup, SSH and OVH console access.
-- [ ] Check existing Docker/Zulip, Nginx/PM2, IPv4+IPv6 firewall, ports and restart policies.
-- [ ] Verify actual guest CPU/RAM/disk/filesystem after any approved upgrade reboot; do not assume panel values equal OS values.
-- [ ] Confirm Zulip and other apps are healthy and resource headroom is adequate.
+- [ ] Check bastion SSH gateway/inspection timers, Docker if present, IPv4+IPv6 firewall, ports and restart policies.
+- [ ] Verify actual Debian 13 host CPU/RAM/disk/filesystem and live memory/disk headroom (prior estimate ~1 vCPU / 2GB / 20GB).
+- [ ] Confirm SSH and monitoring functions remain healthy; assess whether adding a web app to a jump host is acceptable.
 - [ ] Deploy separate app Compose/network/volumes/DB, HTTPS, smoke tests, rollback strategy.
-- [ ] No Aeternum deploy or live reboot without explicit operational authorization.
+- [ ] No Aeternum deploy, public port changes or live reboot without explicit operational authorization. Zulip is out of scope.
 
 ### Deferred — do not implement without a new decision
 - Guild Auction / loot bidding.

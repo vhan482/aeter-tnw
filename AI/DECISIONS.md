@@ -15,7 +15,7 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 | D-009 | Agreed | Member Action Center for reasons, officer notes, AFK/AWOL follow-up | Officer workflows beyond monitoring |
 | D-010 | Agreed | OCR local/free first + clerk review | Lower API costs and fewer silent extraction mistakes |
 | D-011 | Proposed | React/Vite/TS + Express + Drizzle + PostgreSQL, Docker Compose | Fits preferred stack and small server |
-| D-012 | Proposed | Co-host on upgraded OVH Zulip VPS | Panel reports 2 vCores, 8GB RAM, 80GB; post-reboot verification pending |
+| D-012 | Superseded | Co-host on upgraded OVH Zulip VPS | Replaced by bastion/utility candidate; Zulip must remain untouched |
 | D-013 | Proposed | Administrator OAuth for private Drive/Sheets integration | Avoid member-by-member Google auth |
 | D-014 | Unverified | Roster `Rating` is actual `Gear Rating` | Must check game UI before using as weekly GR |
 | D-015 | Unverified | Siege Emperium number's exact definition | Keep raw neutral field |
@@ -28,6 +28,10 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 | D-022 | Deferred | Guild Auction and Polarity Zone tools | Reference UI ideas; no confirmed Aeternum requirement or game rules yet |
 | D-023 | Proposed | Prioritize Attendance + Member Action Center before complex performance OCR | Delivers immediate clerk value on top of roster/GR |
 | D-024 | Agreed | Planned squad assignment does not prove event participation | Keep party planning separate from observed/confirmed attendance |
+
+| D-025 | Proposed | Host on existing Bastion/Inspector utility VPS | User preference on 2026-11-10; 1 vCPU/~2 GB/20 GB and sensitive SSH role require suitability/security check |
+| D-026 | Agreed | Yarn 4 via Corepack (node-modules linker) | Consistent package manager for React + Express; commit yarn.lock after first online install |
+| D-027 | Agreed | Develop locally first; no VPS changes in foundation PR | Protect existing bastion/inspection services and allow isolated testing |
 
 ## New decision template
 

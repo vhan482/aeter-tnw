@@ -1,6 +1,6 @@
 # Agent Handoff / Current Project State
 
-**Last updated:** 2026-11-10 (Asia/Manila)
+**Last updated:** 2026-11-10 (Asia/Manila); Yarn/API foundation branch started.
 
 ## Verified / discussed
 
@@ -11,7 +11,7 @@
 - Six core planned modules: Members/weekly GR, Mirror World, Guild League, Guild Siege, 3-checkpoint Attendance, Member Action Center.
 - Future Team Planner: accepted direction from the reference UI review, **not a current MVP implementation**. Auctions and Polarity Zone **deferred**.
 - Suggested delivery sequence: local foundation → weekly roster/GR → Attendance/Action Center → performance OCR/analytics → future Team Planner.
-- OVH upgrade panel previously showed 2 vCores / 8GB / 80GB on the Zulip VPS, but actual guest resources and Zulip health are **not verified in this project**. No confirmed Aeternum API/PostgreSQL deployment.
+- Hosting preference changed to the Bastion/Inspector utility VPS (prior inventory: Debian 13, 1 vCPU / ~2GB / 20GB); SSH jump/inspection role requires review before web hosting. Zulip is **not** the deployment candidate. No confirmed Aeternum API/PostgreSQL deployment.
 
 ## Immediate next actions
 
@@ -21,7 +21,7 @@
 4. Implement roster/weekly snapshots and evidence-review flow.
 5. Add BEFORE/DURING/AFTER observations and private officer action cases.
 6. Add Mirror World first, then League/Siege screenshot extraction.
-7. Before any VPS deploy, verify Zulip, backups, disk, firewall, and resource headroom.
+7. Before any VPS deploy, check bastion SSH/inspection functions, backups, available disk/RAM, access boundaries and firewall.
 
 ## Rules to carry forward
 
@@ -30,7 +30,7 @@
 - Mirror World values and Guild League DPS-tab values are **total damage**, not automatically DPS rate.
 - Officer reasons and AFK/AWOL are private and require policy + human confirmation.
 - Planned team assignments must never be treated as event participation.
-- Do not alter or reboot production Zulip/VPS as part of local development.
+- Do not modify bastion/SSH/inspection or Zulip services during local development.
 
 ## Session closeout template
 

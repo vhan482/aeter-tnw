@@ -181,9 +181,9 @@ Each evidence item stores file checksum, event ID, original filename, capture ti
 | Automation | GitHub Actions for lint/tests/build; conservative deploy |
 | Charts | Recharts (proposed; not in starter yet) |
 
-**Hosting candidate:** existing **htg-zulip OVH VPS, Singapore**, alongside Zulip; upgrade shown in panel on 2026-10-23 as **2 vCores / 8 GB RAM / 80 GB disk**. Actual guest-OS resources, current free headroom and post-reboot service health **are not yet verified**. Develop and test the database **locally first**; never assume VPS readiness.
+**Hosting candidate (revised 2026-11-10):** the existing **HTG Bastion/Inspector utility VPS**, not Zulip. Prior inventory indicates **Debian 13 / 1 vCPU / ~2 GB RAM / 20 GB disk** with SSH gateway/inspection duties. This is materially smaller and has a sensitive management role: **deployment requires a fresh capacity/security assessment and explicit approval**. Keep OCR local, do not expose PostgreSQL, and avoid weakening bastion SSH controls. Develop/test locally first. Zulip stays untouched.
 
-**Deployment gates:** perform backups first; inspect current services, Docker restart policies, firewall and SSH/console recovery. Reboot only in an approved window. Check Linux sees CPU/RAM/disk (filesystem may require independent expansion); confirm Zulip, PM2, Nginx, HTTPS, firewall and other sites recover. Only then deploy Aeternum as **separate Docker Compose project/volumes/database**.
+**Deployment gates:** back up and inspect the actual bastion host (CPU/RAM/disk, workloads, SSH gateway role, watchdog/inspection timers, firewall, available ports, swap and recovery). Assess whether running a web app on the bastion weakens the jump-host boundary; if so, choose another isolated target. Production needs private database networking, HTTPS, separate credentials/volumes, rollback and monitoring. **Do not modify Zulip or assume bastion deployment is approved.**
 
 **Safety:** keep Postgres 5432 private on IPv4 **and IPv6**, application secrets outside Git, least privilege, HTTPS, backup+restore rehearsals and protected OAuth refresh credentials. No OCR-heavy background worker on the shared 2-vCore VPS at MVP stage.
 
@@ -237,7 +237,7 @@ Use sufficiently wide numeric types for billion-scale damage; `NULL` for missing
 | **5 — Team Planner (future)** | Manual plans, configurable team slots, role alerts, optional auto-fill, share/print | Assignments can be edited without altering attendance or sensitive records |
 | **6 — Integrations/hardening + deployment** | Private Drive evidence, controlled Sheets import/export, local OCR benchmark, encrypted offsite backups, VPS preflight and deployment | Recovery tested, permissions enforced, existing Zulip services healthy |
 
-**VPS pre-deployment gate:** confirm recoverable backups, SSH/console access, live OS CPU/RAM/disk/filesystem, container restart policies, Zulip/PM2/Nginx health, firewall (IPv4/IPv6), and resource headroom. Deploy an isolated Aeternum Compose project only after those checks. Do not take the reboot for granted.
+**VPS pre-deployment gate:** inspect the Bastion/Inspector server's actual capacity, SSH security boundary, inspection services, backup and console access, firewall (IPv4/IPv6), and resource headroom. An isolated deployment is contingent on explicit approval; the small bastion may be unsuitable. Zulip is out of scope.
 
 Every feature must include basic validation, authorization where relevant, duplicate protection, usable UI, and sufficient tests/documentation. The initial React-only browser demo is **not** proof these exit criteria are met.
 
@@ -268,7 +268,7 @@ Every feature must include basic validation, authorization where relevant, dupli
 - [ ] Implement local Express + PostgreSQL integration, then member roster / weekly snapshot workflow.
 - [ ] Prototype three-checkpoint attendance and private officer case review.
 - [ ] Implement Mirror World first for event-performance OCR once the core data model works.
-- [ ] Separately verify OVH/Zulip upgrade, backups and resource headroom before **any** VPS deployment.
+- [ ] Separately verify bastion resources, backups, isolation and access controls before **any** VPS deployment.
 
 ---
 

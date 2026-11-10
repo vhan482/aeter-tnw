@@ -1,0 +1,24 @@
+name: Yarn foundation checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: corepack enable
+      # Bootstrap exception: yarn.lock must be generated and committed in a follow-up.
+      # Once tracked, replace with 'yarn install --immutable'.
+      - run: yarn install
+      - run: yarn typecheck
+      - run: yarn test
+      - run: yarn build
