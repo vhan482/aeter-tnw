@@ -49,3 +49,13 @@
 - First Leader account created in a local terminal; Leader manages new accounts. Use Argon2id hashes, opaque DB sessions and strict origin checking.
 - The current React screens still read browser localStorage/IndexedDB; the new sign-in gate does **not** migrate, encrypt or share this pre-existing data. Do not deploy this browser prototype for sensitive multi-user operations before the server data migration.
 - No changes to bastion/utility VPS or Zulip. Hosting remains pending security review.
+
+## Phase 2B implementation — November 10, 2026
+
+- PR #2 **merged** at `ef595db6`, officer-only login and management accounts present on `main`.
+- Next in-flight PR: `feat/server-roster-weekly-gr`, API-backed guild roster and weekly verified GR plus a reviewed one-time legacy member import.
+- Legacy browser workspace intentionally **not rendered** once the new roster module is active. Its localStorage/IndexedDB remains on the old browser; never silently merge or delete evidence, gear, attendance or performance.
+- Stable member UUIDs, legacy-ID mapping, character name aliases, optimistic record versions and audited GR corrections are new planned fields.
+- Only the guild roster can be imported when the server roster is empty. Legacy screenshots and full record migration are **out of scope**.
+- The management API must retain the authenticated Officer/Clerk gate and the temporary-password guard.
+- Do not deploy or modify the Bastion/Inspector utility server before its separate security/capacity preflight.

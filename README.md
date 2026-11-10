@@ -52,3 +52,9 @@ Do **not** use this local demo for shared guild access, or assume officers can s
 - This version does not invent cross-class DPS/performance rankings.
 - Locally stored screenshot files must be backed up separately. Avoid sensitive real-world information in screenshots.
 - To deploy shared access safely, do not simply publish this demo: implement authenticated backend access first.
+
+## Server-backed roster (Phase 2B in feature development)
+
+The new officer workspace uses authenticated `/api/management/members` routes for real PostgreSQL member records and reviewed weekly Gear Rating snapshots. The previous browser-local demo code remains in the repository but is no longer the default signed-in workspace.
+
+The **one-time preview/approve legacy import** reads only `Members` from this browser's old localStorage (when explicitly requested) and works **only if the server roster is empty**. It does not migrate Gear, Events, Attendance, Performance, Evidence, personal notes or screenshot binaries. Original browser data remains untouched. Avoid manually deleting browser storage until all desired data has been independently preserved and reviewed.

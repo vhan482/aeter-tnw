@@ -89,3 +89,15 @@ Officer access is API-enforced, not simply a hidden React route. There is no sel
 - Production requires TLS, tested reverse-proxy rules, account recovery procedures, backups, and a bastion suitability review. This branch is **local-only and not a production deployment**.
 
 After login, the current browser-local `localStorage`/`IndexedDB` records remain on that device; signing out clears the server session but **does not erase browser-local prototype data**. Do not use shared devices or store private officer explanations in this prototype until the PostgreSQL CRUD migration is complete.
+
+## Server-backed members and weekly GR (Phase 2B)
+
+After signing in with an approved officer account, the default workspace is **Member Registry**, reading/writing `/api/management/members` in PostgreSQL. The original browser-local `App.tsx` prototype remains in source but is deliberately not rendered: it is not safe to confuse browser data with server-owned guild records.
+
+The member API supports create/edit, server-side paging, member name search, stable IDs and historical name aliases. Editing is versioned to reject stale officer updates. No hard delete endpoint exists: members can be marked `LEFT`.
+
+Each member has one weekly GR snapshot per chosen `weekStart`; **do not assume** the game roster `Rating` field is GR. A numeric GR requires an authenticated human reviewer, the source screenshot reference and a checked acknowledgment. Corrections require a reason and append to a dedicated history table. Missing GR is `NULL`, not zero.
+
+**Legacy browser roster import:** only when the server roster is completely empty, press "Preview browser roster import" on the same browser that holds the old `tnw-guild-ops-v1` localStorage key. Inspect **all rows**, confirm that only member profiles will migrate, then import. This maps legacy IDs to new UUIDs and preserves the original browser storage. Gear, event, attendance and screenshot evidence are *not* migrated. If member names/IDs collide or the server roster is nonempty, import fails rather than silently merging characters. Export/backup the original workbook and screenshot evidence separately before any manual cleanup.
+
+Auth, API and migration integration tests run in CI against an isolated PostgreSQL 17 service. The bastion remains out of scope until independently approved.

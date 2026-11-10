@@ -22,11 +22,11 @@ Build a **cost-conscious, self-hosted guild operations and analytics dashboard**
 
 - **GitHub:** `vhan482/aeter-tnw`, public, `main`, with `NORTH_STAR.md`, `AGENTS.md`, and `AI/` documentation. Direct GitHub file writes were **successfully verified** by the 2026-10-23 `AI/HANDOFF.md` commit; the old 403 access issue is closed.
 - **Local frontend prototype:** React/Vite/TypeScript `src/App.tsx` with basic Members, Gear, Events, Attendance, Performance and Evidence CRUD, localStorage + IndexedDB, and ExcelJS import/export. **Prototype only**; browser storage is not a shared guild database. Existing import replaces browser records after a warning.
-- **Implementation status:** Yarn 4 + Express health/readiness and initial local PostgreSQL roster migrations were merged in PR #1. Officer-only authentication is in PR #2 (not merged). **Not implemented:** shared roster CRUD, Drive/Sheets sync, OCR, three-checkpoint attendance inference, Member Action Center, team planner, or VPS deployment.
+- **Implementation status:** Yarn 4 + Express health/readiness and initial local PostgreSQL roster migrations were merged in PR #1. Officer-only authentication was merged in PR #2. **Not yet merged:** shared roster CRUD, Drive/Sheets sync, OCR, three-checkpoint attendance inference, Member Action Center, team planner, or VPS deployment.
 - **Hosting:** Bastion/Inspector utility VPS proposed; its SSH gateway function and limited resources require a fresh capacity/security review. Zulip is **not** the Aeternum hosting target.
 - **Reference UI:** The RONW Guild Management Tool screenshots inspired future team planning and dashboard workflows. They are **design references, not Aeternum member data, licensed source code, or proof that those features exist here**.
 
-**Delivered:** [PR #1](https://github.com/vhan482/aeter-tnw/pull/1) was merged on 2026-11-10: Yarn 4, Express health/readiness, local PostgreSQL and tracked initial roster migrations. **In-flight:** officer-only authentication (this PR); no VPS deployment, shared roster CRUD, OCR or Drive/Sheets sync yet.
+**Delivered:** [PR #1](https://github.com/vhan482/aeter-tnw/pull/1) was merged on 2026-11-10: Yarn 4, Express health/readiness, local PostgreSQL and tracked initial roster migrations. **Delivered:** Officer-only authentication PR #2 merged 2026-11-10. **In-flight:** PR #3 for shared member CRUD, verified weekly GR and one-time reviewed legacy roster import. No VPS deployment, event OCR or Drive/Sheets sync yet.
 
 **Scope convention:** Sections 3.1–3.6 are the **core planned product**. Section 3.7 is an **approved future direction** after core workflows. Section 3.8 lists **deferred ideas**, not commitments. Exact implementation choices remain subject to tests and user review.
 
@@ -195,8 +195,8 @@ Each evidence item stores file checksum, event ID, original filename, capture ti
 
 | Entity | Stores |
 |---|---|
-| `members`, `member_aliases` | Stable identity, characters, class/build, join/leave dates, position, status |
-| `weekly_member_snapshots` | Member, week, verified GR, roster metadata, evidence, superseded/updated state |
+| `members`, `member_aliases`, `member_changes` | Stable identity, aliases, in-game role, join/leave status and audited edits |
+| `weekly_gear_ratings`, `weekly_gr_corrections` | Member/week verified GR, source filename/reference, reviewer and append-only correction history |
 | `bosses` | Name, race, size, element, element level; versioned corrections |
 | `event_instances` | Type, start time, duration, boss/opponent/stage and capture metadata |
 | `mirror_world_results` | Rank, total damage raw/normalized, approximate DPS, weekly GR FK |

@@ -32,6 +32,20 @@ jobs:
           node-version: '22'
       - run: corepack enable
       - run: yarn install --immutable
+      # Temporary once-only migration bootstrap. Remove after the generated SQL is committed.
+      - name: Generate roster migration
+        run: yarn workspace @aeter/api db:generate
+        env:
+          DATABASE_URL: postgresql://ci:ci_only_for_tests@127.0.0.1:55432/aeter_ci
+      - name: Export generated migration files
+        shell: bash
+        run: |
+          find apps/api/drizzle -type f -print0 | sort -z | while IFS= read -r -d '' path; do
+            echo "BEGIN_AETER_ROSTER_MIGRATION=$path"
+            base64 -w0 "$path"
+            echo
+            echo "END_AETER_ROSTER_MIGRATION=$path"
+          done
       - run: yarn typecheck
       - run: yarn build
       - name: Apply tracked Drizzle migrations to isolated PostgreSQL
