@@ -16,3 +16,7 @@ test('rejects invalid ports and non-Postgres URLs', () => {
   assert.throws(() => loadConfig({ PORT: '65536', DATABASE_URL: 'postgresql://user:secret@localhost/db' }), /PORT/);
   assert.throws(() => loadConfig({ DATABASE_URL: 'https://example.com/secret' }), /DATABASE_URL/);
 });
+
+test('requires HTTPS origin for production sessions', () => {
+  assert.throws(() => loadConfig({ DATABASE_URL: 'postgresql://x:y@127.0.0.1/a', NODE_ENV: 'production', APP_ORIGIN: 'http://example.com' }), /APP_ORIGIN/);
+});

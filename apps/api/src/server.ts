@@ -12,7 +12,7 @@ const pool = new pg.Pool({
 });
 
 pool.on('error', () => console.error('[aeter-api] database pool disconnected'));
-const server = createApp(pool).listen(config.PORT, config.HOST, () => {
+const server = createApp(pool, config).listen(config.PORT, config.HOST, () => {
   console.log(`[aeter-api] listening on http://${config.HOST}:${config.PORT}`);
 });
 
