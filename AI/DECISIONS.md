@@ -1,6 +1,6 @@
 # Decision Register
 
-Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a date and why it changed.
+Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a date and why it changed. **Agreed future** means direction accepted, but not scheduled for MVP.
 
 | ID | Status | Decision | Rationale / caveat |
 |---|---|---|---|
@@ -24,6 +24,10 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 | D-018 | Proposed | Role-gated local accounts, officer-private action notes | Appropriate access without third-party auth |
 | D-019 | Unverified | Guild-specific AFK/AWOL/absence thresholds | Leadership must define, never infer from online status alone |
 | D-020 | Proposed | Google Sheets imports require review/diff/approval | Prevent unintended overwrite/data divergence |
+| D-021 | Agreed future | Team/party planner for League and Siege | Use roster, role and likely availability; manual assignment first, auto-fill as optional suggestion |
+| D-022 | Deferred | Guild Auction and Polarity Zone tools | Reference UI ideas; no confirmed Aeternum requirement or game rules yet |
+| D-023 | Proposed | Prioritize Attendance + Member Action Center before complex performance OCR | Delivers immediate clerk value on top of roster/GR |
+| D-024 | Agreed | Planned squad assignment does not prove event participation | Keep party planning separate from observed/confirmed attendance |
 
 ## New decision template
 
