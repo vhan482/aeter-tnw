@@ -32,12 +32,12 @@ AI/                      Agent instructions/context
 
 ## Deployment model
 
-- One isolated Aeternum Compose project beside Zulip on OVH, **only after** reboot/capacity/backup checks.
+- Potentially one isolated Aeternum Compose project on the HTG Bastion/Inspector utility VPS, **only after** capacity, access-boundary and backup/security checks; Zulip is no longer the hosting candidate.
 - Reverse proxy for dashboard + API over HTTPS.
 - API and Postgres on internal bridge network, Postgres has **no host `ports:` binding**.
-- Separate DB user, volume, project, backup schedule, secrets and Compose files from Zulip.
+- Separate DB user, volume, project, backup schedule, secrets and Compose files from existing bastion services.
 - Resource constraints and security settings set after measuring actual memory/CPU.
-- App and DB restart policies chosen/tested independently of Zulip.
+- App and DB restart policies chosen/tested independently of existing SSH and inspection services.
 - Real database backups plus **off-VPS encrypted** backups; periodic restore drill.
 - Apply DB schema migrations transactionally when feasible and back up before destructive operations.
 
@@ -51,9 +51,9 @@ Admin-consented OAuth 2.0 on backend for personal Drive account; restrict scopes
 
 ## VPS preflight (not yet completed)
 
-Control panel on 2026-10-23 shows OVH VPS **2 vCores, 8GB RAM, 80GB disk** (Debian 12, Singapore), shared with Zulip. A reboot was planned to reflect upgrade; **guest OS and existing service health still need verification**.
+Bastion/Inspector utility candidate (per recent inventory): **Debian 13, 1 vCPU, ~2 GB RAM, 20 GB disk**, used for SSH gateway/inspection duties. **Fresh resource/availability checks and risk review are required**. Do not migrate production services or change SSH/network exposure as part of this phase.
 
-Checklist: backup/recovery; `nproc`, `free -h`, `lsblk`, `df -h /`; Docker container health/usage; Nginx, PM2, Zulip external HTTPS; IPv4/IPv6 firewall; PostgreSQL not published; disk device vs filesystem resize requirements; available resource headroom.
+Checklist: backup/recovery; `nproc`, `free -h`, `lsblk`, `df -h /`; existing service/inspection timer load; SSH-only access policy and jump-host function; Docker availability; IPv4/IPv6 firewall; no PostgreSQL public listener; storage and memory headroom. Confirm whether public web hosting belongs on this bastion at all.
 
 ## Operational non-goals
 

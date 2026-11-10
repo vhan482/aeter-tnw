@@ -4,11 +4,16 @@ React + TypeScript **local/browser-only prototype** for Ragnarok: The New World 
 
 > **Important:** This is not the final shared guild application. The requirements and target architecture live in [NORTH_STAR.md](NORTH_STAR.md), with AI coding instructions in [AGENTS.md](AGENTS.md) and the [AI/](AI/) folder. The current implementation does **not** contain PostgreSQL, Express, a shared login, Google integration, OCR, Member Action Center or Team Planner.
 
+## Development foundation (Yarn)
+
+This repo is migrating toward a Yarn workspace model and local Express/PostgreSQL foundation. Start with [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md). **No shared backend is currently deployed, and the original browser prototype still stores its own data locally.** Production hosting is now being evaluated on the Bastion/Inspector utility VPS (not Zulip), pending security and capacity review.
+
 ## Run locally
 
 ```bash
-npm install
-npm run dev
+corepack enable
+yarn install
+yarn dev
 ```
 
 Open `http://localhost:5173`. Production build: `npm run build`.

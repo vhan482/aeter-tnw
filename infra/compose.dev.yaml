@@ -1,0 +1,23 @@
+name: aeter-tnw-dev
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+    # Local-only development access; NEVER publish PostgreSQL on the bastion.
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - aeter_pg_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  aeter_pg_dev:
