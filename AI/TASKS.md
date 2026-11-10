@@ -42,6 +42,13 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Phase 3 PR: manually initiated AFK/AWOL follow-up queue, audit, officer-only access and manual handover.
 - [ ] Attendance review and private export authorization tests.
 
+## P3.5 — Class icons and visual design (approved future work; not implemented)
+- [ ] Verify the 38 reference class labels against actual TNW naming and expansions; support aliases and unknown classes.
+- [ ] Verify WebP icon redistribution/licensing; otherwise use original or properly licensed alternatives.
+- [ ] Build one typed class registry with family color tokens, accessible icon alt text, fallback, and optimized permanent static assets.
+- [ ] Integrate class icon + class label in Member Registry and Attendance first; extend to weekly GR, Guild League, Guild Siege, charts and Team Planner.
+- [ ] Ensure class, combat role and guild rank remain independent; images must never be written to the seven-day attendance screenshot directory.
+
 ## P4 — Performance screenshots (incremental)
 - [ ] Mirror World first: boss catalog race/size/element/level, 900s estimate, same-boss GR comparisons.
 - [ ] Guild League: Main DPS/Support, Sub DPS/Support/Strategy, match context, player-identity merging.
