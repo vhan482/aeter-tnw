@@ -48,6 +48,10 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 | D-038 | Agreed | AFK/AWOL follow-up cases are opened and decided manually, never generated from online/offline indicators | Respect unverified guild policy and evidence quality |
 | D-039 | Deferred by user | Off-server database backup/restore work on personal deployment | User chose to skip for now; server loss can permanently destroy attendance, cases and roster data |
 
+| D-040 | Agreed | Attendance screenshots use private Multer upload storage on the bastion, with seven-day byte retention | Simple, no Google API/OAuth; retain checksum/metadata and event references after deleting bytes |
+| D-041 | Agreed | Google Drive remains an optional later integration; Google Docs is not the media repository | Drive is purpose-built for private image objects; no immediate need for cloud integration |
+| D-042 | Proposed | Private file download requires officer session, file type signature verification and server-side quotas | Limit upload abuse and prevent a small 20 GB bastion disk from filling |
+
 ## New decision template
 
 ```markdown

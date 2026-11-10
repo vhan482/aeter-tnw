@@ -286,3 +286,10 @@ Every feature must include basic validation, authorization where relevant, dupli
 - Checkpoint evidence is currently a **filename/reference only**. Local file storage, Drive uploads, OCR and hash validation remain future work.
 - Cases, notes and officer decisions are **manual and private**, with append-only change timelines. AWOL/AFK policy remains unverified.
 - The user intentionally deferred backup/restore setup for this personal deployment. This is a risk acceptance, **not** assurance of recoverability; avoid destructive migrations and keep SSH/bastion operations untouched during feature development.
+
+
+### Phase 3 screenshot retention (agreed 2026-11-11)
+
+Use temporary local screenshot storage instead of Google Docs or immediately building Google Drive OAuth. The private upload directory is outside Nginx's web root. HTTP uploads use Multer 2.5.0 or newer patched release, 5MB/file, JPEG/PNG/WebP signature validation, ~250MB aggregate limit, and an explicit disk-space safety buffer. Authorized officers/clerks can view images only through authenticated API endpoints. Files **automatically expire seven days after upload**; an hourly cleanup service removes bytes, while event links, filenames, checksums and review records remain in PostgreSQL with an "expired" status. Filenames are not proof that an upload exists. No OCR extraction and no public direct image URL.
+
+Privacy trade-off: loss of screenshot bytes after a week removes later re-review capability; keep this visible in the UI. User deferred database backup/restore for this personal project; therefore a VPS failure can still irreversibly lose record metadata and private casework. Google Drive can be reconsidered if longer audit retention becomes necessary.

@@ -113,3 +113,79 @@ Auth, API and migration integration tests run in CI against an isolated PostgreS
 - The Action Center is restricted to Leader/Officer. Member-reported explanations and officer comments are separate append-only notes. No automatic AFK/AWOL flag.
 - No screenshot upload, OCR or private Drive storage in this phase. Do not treat filenames as proof of file existence.
 - User deferred DB backup/restore. Avoid destructive migrations and explicitly acknowledge the possibility of unrecoverable loss; backup/restore remains advisable before real officer cases contain sensitive data.
+
+
+## Phase 3 screenshot upload & 7-day retention (Multer, local disk)
+
+The feature PR adds authenticated `POST /api/management/attendance/evidence` (multipart `image`), `GET .../evidence/:id/meta` and `GET .../evidence/:id/file`. Only authenticated officer accounts with completed password change can upload or view; mutating routes also require the configured exact browser `Origin`. Captured images are never served directly by Nginx.
+
+- JPEG, PNG, WebP; 5MB maximum per file; verify both declared MIME and magic bytes. Multer **2.5.0**, not versions with 2026 multipart denial-of-service vulnerabilities.
+- Private upload path `UPLOAD_DIR` (default `/var/lib/aeter/uploads`), directory mode 0700 and owned by `aeter`. Files get random UUID names; never use user-controlled paths.
+- Bounded by 250MB aggregate files and 512MB minimum available disk space. This protects the 20GB bastion but is not a substitute for active disk alerts. Upload limiter: 30/hour/IP per API instance.
+- 7 days after upload, HTTP image access returns 410; an hourly timer permanently removes bytes. DB metadata retains original name, SHA-256, uploader, size, MIME, timestamps and linked checkpoint. Evidence UI displays `EXPIRED`, and re-review is impossible without re-upload.
+- Database metadata has no stored image bytes. Do not drop `attendance_evidence` or its references when applying migrations.
+- The cleanup worker also removes unreferenced UUID-named files older than one hour (aborted/crashed uploads), never unrelated files.
+
+### Bastion configuration after PR is merged and migrations are reviewed
+
+**Do not deploy these instructions until CI is green and the PR is reviewed.** Existing deployed Member Registry remains functional in the meantime.
+
+```bash
+sudo install -d -o aeter -g aeter -m 0700 /var/lib/aeter/uploads
+sudo chmod 0700 /var/lib/aeter/uploads
+```
+
+Set `UPLOAD_DIR=/var/lib/aeter/uploads` in `/etc/aeter-tnw/api.env` (leave secrets untouched). In `/etc/systemd/system/aeter-api.service`, under `[Service]`, add:
+
+```ini
+ReadWritePaths=/var/lib/aeter/uploads
+```
+
+This is required if `ProtectSystem=strict` is set. The service must not have write permission to `/var/www/aeternum`.
+
+Add the following two units; use a separate cleanup worker with minimal privileges instead of deleting files from each API request.
+
+`/etc/systemd/system/aeter-evidence-cleanup.service`:
+
+```ini
+[Unit]
+Description=Aeternum Screenshot Retention Cleanup
+After=postgresql@17-main.service
+
+[Service]
+Type=oneshot
+User=aeter
+Group=aeter
+WorkingDirectory=/opt/aeter-tnw/apps/api
+EnvironmentFile=/etc/aeter-tnw/api.env
+ExecStart=/opt/node22/bin/node /opt/aeter-tnw/apps/api/dist/cli/cleanup-evidence.js
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/aeter/uploads
+UMask=0077
+MemoryMax=256M
+```
+
+`/etc/systemd/system/aeter-evidence-cleanup.timer`:
+
+```ini
+[Unit]
+Description=Hourly Aeternum Screenshot Expiry Sweep
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=5m
+Unit=aeter-evidence-cleanup.service
+
+[Install]
+WantedBy=timers.target
+```
+
+Run `sudo systemctl daemon-reload` and `sudo systemctl enable --now aeter-evidence-cleanup.timer`. Review `sudo systemctl list-timers --all | grep aeter`, and test one cleanup using `sudo systemctl start aeter-evidence-cleanup.service` followed by `sudo journalctl -u aeter-evidence-cleanup.service -n 30 --no-pager`. Deletion is irreversible; a retained metadata row does not restore the screenshot.
+
+Nginx default client request limit is commonly 1MB. For the existing Aeternum virtual host only, within the `location /api/` block, set `client_max_body_size 6m;`. Verify `sudo nginx -t` before reloading; don't change other virtual hosts or bastion firewall rules.
+
+Once deployed, verify both 401 (unauthenticated image access), 403 (missing upload origin), 413 (over 5MB), 415 (spoofed content), successful private download, 7-day expiry/410 and a successful one-shot cleanup.

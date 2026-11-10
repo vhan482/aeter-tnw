@@ -35,7 +35,8 @@ Use this as a working checklist; update checkboxes only after tests/verification
 
 ## P3 — Attendance / Member Action Center
 - [ ] Phase 3 PR: BEFORE / DURING / AFTER checkpoint references and explicit reviewed ONLINE/OFFLINE/UNKNOWN observations; migration/tests pending.
-- [ ] Multi-page roster coverage check; unknown ≠ offline and online ≠ participation.
+- [ ] Phase 3: multiple screenshot references per phase, coverage labels; unknown ≠ offline and online ≠ participation.
+- [ ] Add 7-day local image retention with private authenticated viewing, size/format limits, content signature validation, hourly cleanup timer and expiry state.
 - [ ] Phase 3 PR: evidence-constrained participation assessment and officer confirmation; tests pending.
 - [ ] Phase 3 PR: distinct member reports and officer notes with source/time and immutable audit.
 - [ ] Phase 3 PR: manually initiated AFK/AWOL follow-up queue, audit, officer-only access and manual handover.
