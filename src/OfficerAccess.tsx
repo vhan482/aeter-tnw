@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import App from './App';
 import './officer-access.css';
 
@@ -46,7 +46,7 @@ function OfficerManager({ onClose }: { onClose: () => void }) {
     return () => { active = false; };
   }, []);
 
-  async function add(e: React.FormEvent) {
+  async function add(e: FormEvent) {
     e.preventDefault(); setBusy(true); setNotice('');
     try {
       await api('/api/officers', { method: 'POST', body: JSON.stringify({
@@ -134,7 +134,7 @@ export default function OfficerAccess() {
     return () => { active = false; };
   }, []);
 
-  async function login(e: React.FormEvent) {
+  async function login(e: FormEvent) {
     e.preventDefault(); setBusy(true); setError('');
     try {
       const data = await api<{officer:Officer}>('/api/auth/login', {
@@ -144,7 +144,7 @@ export default function OfficerAccess() {
     } catch(e) {setError(e instanceof Error ? e.message : 'Sign-in failed');}
     finally {setBusy(false);}
   }
-  async function change(e: React.FormEvent) {
+  async function change(e: FormEvent) {
     e.preventDefault(); setBusy(true); setError('');
     try {
       const data=await api<{officer:Officer}>('/api/auth/change-password', {

@@ -209,6 +209,7 @@ export function registerAuthRoutes(app: Express, pool: pg.Pool, config: ApiConfi
     const id = idParam.safeParse(req.params.id);
     const parsed = resetPassword.safeParse(req.body);
     if (!id.success || !parsed.success) { res.status(400).json({ error: 'Invalid request' }); return; }
+    if (id.data === officerFrom(res).id) { res.status(409).json({ error: 'Cannot reset own account here' }); return; }
     const newHash = await hashPassword(parsed.data.temporaryPassword);
     const updated = await db.transaction(async tx => {
       const rows = await tx.update(officerAccounts).set({ passwordHash: newHash,
