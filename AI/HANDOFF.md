@@ -78,3 +78,11 @@
 - API private evidence records store SHA-256, original name, uploader, size, MIME, upload/expiry/deletion times. Files physically removed after seven days by a **separately installed systemd hourly timer**; historical metadata/checkpoint links remain.
 - On bastion: create `/var/lib/aeter/uploads` (owned by `aeter`, mode 0700); update aeter-api unit with `ReadWritePaths=/var/lib/aeter/uploads` if ProtectSystem=strict; set `UPLOAD_DIR=/var/lib/aeter/uploads` in API env; Nginx upload route limit >=6m. Install new cleanup unit/timer from docs. No live changes made during PR authoring.
 - Legacy filename-only references do not create a stored image or prove file existence. OCR/Drive uploads not implemented.
+
+## Job class icon visual direction — 2026-11-11
+
+- The North Star now includes **Section 3.9**, an agreed future class-icon registry derived from a user-provided screenshot with 38 class labels and individually downloadable WebP icons.
+- Build one centralized TypeScript class-to-icon/family/color mapping. Apply it incrementally to roster, attendance, GR, performance and planned team cards. Keep job class, combat role and guild rank as separate fields.
+- **Asset rights are unverified**: downloadable third-party WebP icons must not be copied into the public repo until redistribution rights are confirmed. Use original/licensed alternatives if needed. Icons are permanent static assets, **not** seven-day attendance evidence.
+- Docs-only North Star enhancement was committed directly to main. No icon image files, production UI, database schema or bastion deployment were changed by this update.
+- Note: Phase 3 PR #4 is now **merged** in GitHub, but its deployment to the bastion has not been verified. Older handoff text describing PR #4 as in development is historical.
