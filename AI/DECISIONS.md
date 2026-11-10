@@ -52,6 +52,8 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 | D-041 | Agreed | Google Drive remains an optional later integration; Google Docs is not the media repository | Drive is purpose-built for private image objects; no immediate need for cloud integration |
 | D-042 | Proposed | Private file download requires officer session, file type signature verification and server-side quotas | Limit upload abuse and prevent a small 20 GB bastion disk from filling |
 
+| D-043 | Agreed future | Introduce a centralized class-icon/color registry for Aeternum | User-supplied reference shows 38 job labels and downloadable WebP artwork; use consistent visual families across roster/attendance/GR/league/siege/team plans, but verify actual class names and redistribution rights before committing assets; class does not determine combat role |
+
 ## New decision template
 
 ```markdown
