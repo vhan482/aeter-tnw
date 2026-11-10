@@ -234,6 +234,9 @@ export function registerRosterRoutes(
       try {
         const result = await db.transaction(async tx => {
           await tx.execute(sql`select pg_advisory_xact_lock(832175, 9102)`);
+          // Serialize against normal member creation as well as competing imports.
+          // A transaction-level advisory lock alone would not block POST /members.
+          await tx.execute(sql`lock table members in share row exclusive mode`);
           const count = (await tx.select({ count: sql<number>`count(*)::int` }).from(members))[0]?.count ?? 0;
           if (count !== 0) return null;
           const inserted = await tx.insert(members).values(batch).returning({ id: members.id, legacyId: members.legacyId });
