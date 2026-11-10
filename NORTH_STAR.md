@@ -1,7 +1,7 @@
 # Aeternum TNW — Product North Star
 
-> **Status:** Requirements baseline / not yet implemented  
-> **Updated:** 2026-10-23 (Asia/Manila)  
+> **Status:** Approved requirements + local frontend prototype; shared backend not implemented  
+> **Updated:** 2026-11-10 (Asia/Manila)  
 > **Repository:** https://github.com/vhan482/aeter-tnw  
 > **Game:** Ragnarok: The New World (TNW)  
 > **Guild:** Aeternum
@@ -18,6 +18,16 @@ Build a **cost-conscious, self-hosted guild operations and analytics dashboard**
 
 **Success means accurate historical data that saves clerks and officers time, rather than a flashy dashboard built on unreliable OCR.** This is a guild hobby project, not an enterprise platform.
 
+## Current project baseline (verified 2026-11-10)
+
+- **GitHub:** `vhan482/aeter-tnw`, public, `main`, with `NORTH_STAR.md`, `AGENTS.md`, and `AI/` documentation. Direct GitHub file writes were **successfully verified** by the 2026-10-23 `AI/HANDOFF.md` commit; the old 403 access issue is closed.
+- **Local frontend prototype:** React/Vite/TypeScript `src/App.tsx` with basic Members, Gear, Events, Attendance, Performance and Evidence CRUD, localStorage + IndexedDB, and ExcelJS import/export. **Prototype only**; browser storage is not a shared guild database. Existing import replaces browser records after a warning.
+- **Not verified as implemented:** Express API, PostgreSQL schema or service, shared authentication, private Google Drive/Sheets integration, automated OCR, three-checkpoint attendance inference, Member Action Center, team planner, and VPS deployment.
+- **Hosting:** OVH control panel previously showed an upgrade to **2 vCores / 8 GB / 80 GB** for the Zulip VPS; guest-OS resources, filesystem and existing service health have not yet been reverified in this project. **Do not reboot or modify Zulip as part of documentation cleanup.**
+- **Reference UI:** The RONW Guild Management Tool screenshots inspired future team planning and dashboard workflows. They are **design references, not Aeternum member data, licensed source code, or proof that those features exist here**.
+
+**Scope convention:** Sections 3.1–3.6 are the **core planned product**. Section 3.7 is an **approved future direction** after core workflows. Section 3.8 lists **deferred ideas**, not commitments. Exact implementation choices remain subject to tests and user review.
+
 ## 2. Non-negotiable principles
 
 1. **PostgreSQL is source of truth.** Google Drive stores private screenshots; Google Sheets is controlled import/export and reporting—not a competing primary database.
@@ -26,7 +36,7 @@ Build a **cost-conscious, self-hosted guild operations and analytics dashboard**
 4. **Never mistake unknown for zero.** Cropped leaderboards, missing roster pages and obscured values must not produce fake scores or absences.
 5. **Context matters.** Compare same boss where possible; keep match opponent, stage, battlefield, class/role and weekly GR. No automatic accusations based on rankings.
 6. **Fair to different roles.** Recognize DPS, tanks, supports, revivers and strategy/objective players separately; no opaque universal performance score in MVP.
-7. **Simple and inexpensive.** React + Express + Postgres on existing VPS if resources permit; OCR runs locally initially; no mandatory paid AI API, Supabase, Kubernetes or microservices.
+7. **Simple and inexpensive.** Reuse the local React prototype where sensible; add Express + PostgreSQL; co-host on existing VPS only after health/capacity checks; run OCR locally initially. No mandatory paid AI API, Supabase, Kubernetes or microservices.
 8. **Security proportional to risk.** Private officer explanations, least-privilege access, no public DB port, HTTPS, secrets outside Git, auditable changes and restorable backups.
 9. **Preserve history.** Weekly GR and event results are dated snapshots; changes are corrections with audit history, not destructive overwrites.
 
@@ -82,8 +92,6 @@ Per visible player row: **rank, member ID/name, class icon if reliably known, ac
 
 Guild League analysis should be segmented by offensive output, healing/revives, damage taken/survivability, building and strategic contributions, opponent and stage, and weekly GR. Damage comparisons without matchup/role context may mislead.
 
-**Example screenshot context (historical, not automatic import):** Aeternum vs MasaraTown, Finals, 2026-10-22, Defeat; Main Aeternum 60 participants / 167 kills versus MasaraTown 60 / 954; Sub Aeternum 71 participants / 484 kills, 2 flag repairs, 0 boss kills versus opponent 83 / 985, 29 flag repairs, 4 boss kills. All examples require review before persisted as actual records.
-
 ### 3.4 Guild Siege: City Report / Guild Ranking
 
 Capture selected **event date**, player, guild position, **K/D/A**, **Damage Taken/Healing**, **Damage/Emperium**, and **Points**. The two compound columns should be parsed into separate numeric fields **and retain original raw strings**.
@@ -91,7 +99,6 @@ Capture selected **event date**, player, guild position, **K/D/A**, **Damage Tak
 - Deaths are visible; keep zero deaths as a genuine input. Display KDA ratio as `N/A (0 deaths)` and present K+A if desired, rather than infinity or a hidden custom denominator.
 - Treat damage as **total**, not DPS unless valid duration is available.
 - **Unverified:** the exact meaning of the second number in `Damage/Emperium`. Store it neutrally as `emperium_metric_raw/value` until confirmed—not as emperium damage or kills.
-- Example source screenshot selected date **2026-10-18**, showing only five visible rows; this is a partial report, not the whole guild.
 - Position labels such as Member, Elite or Main Command are guild roles, not player performance ranks.
 
 ### 3.5 Guild Activity Attendance: BEFORE / DURING / AFTER
@@ -124,6 +131,24 @@ Suggested states: `OPEN`, `AWAITING_RESPONSE`, `IN_REVIEW`, `EXCUSED`, `UNEXCUSE
 - **Privacy:** absence explanations/disciplinary notes are restricted to authorized officers and must **not** appear in public/shared Sheets by default.
 - **Unverified:** exact AWOL thresholds, valid excuses and escalation rules; confirm with guild leadership.
 
+### 3.7 Team and Party Planner (future milestone; not part of core MVP)
+
+Use the existing roster, **weekly GR**, class/role, and member availability to help officers assemble and share event teams. Ideas drawn from the reference UI:
+
+- Five-player party cards **only where the event rules confirm that size**; configurable team capacities, battlefield assignments and role requirements.
+- Manual drag/drop or accessible click-to-assign, team locks, duplicate/conflict warnings, healer/role composition alerts, and an optional **suggestion-only** auto-fill mode.
+- Display roster context, likely availability and reported absence, but **never convert a planned assignment into confirmed attendance**.
+- Save planned rosters by event, distinguish `DRAFT` from `FINAL`, and export a safe print/share view without private officer notes.
+- Proposed targets: Guild League Main/Sub and Guild Siege party organization. Polarity Zone composition is **not yet an approved module**.
+- The exact squad capacities, class rules, eligibility, and conflict semantics must be confirmed before implementing auto-fill.
+
+### 3.8 Deferred ideas (not approved for MVP)
+
+- **Guild Auction / loot bidding:** item lots, quantity, bids, and award history. Needs actual guild demand and rules first.
+- **Polarity Zone:** optional Elite Battlefield / Dungeon team planning. Confirm event rules, roster requirements and officer interest before scheduling.
+- **Universal cross-role performance score:** defer; raw class/role-aware metrics are more trustworthy.
+- **Live OCR AI API, full automation or advanced optimization:** defer until a local OCR benchmark demonstrates need.
+
 ## 4. Extraction and data workflow
 
 1. Clerk creates or selects event/weekly snapshot with required date, boss/opponent and battlefield as appropriate.
@@ -137,11 +162,11 @@ Suggested states: `OPEN`, `AWAITING_RESPONSE`, `IN_REVIEW`, `EXCUSED`, `UNEXCUSE
 
 Each evidence item stores file checksum, event ID, original filename, capture time (if known), Drive file ID, OCR template/version, reviewer and verification state. Per-stat provenance should be traceable.
 
-**Low-cost choice:** OCR initially runs **locally on the clerk machine**, not the production VPS; no mandatory paid AI API. Benchmark real OCR quality before considering paid fallbacks. Workload may include long/scrolled screenshots and multilingual usernames.
+**Low-cost choice:** OCR initially runs **locally on the clerk machine**, not the production VPS; no mandatory paid AI API. Browser-only OCR vs a local Python helper is **an implementation choice still to be tested**. Benchmark real OCR quality before considering paid fallbacks. Workload may include long/scrolled screenshots and multilingual usernames.
 
 ## 5. Technology & hosting
 
-**Proposed stack (subject to implementation review):**
+**Target stack (subject to implementation review; distinct from the existing React-only prototype):**
 
 | Layer | Design |
 |---|---|
@@ -154,8 +179,9 @@ Each evidence item stores file checksum, event ID, original filename, capture ti
 | OCR | OpenCV + Tesseract, PaddleOCR evaluation; local processing |
 | Deployment | Docker Compose, Nginx reverse proxy, HTTPS |
 | Automation | GitHub Actions for lint/tests/build; conservative deploy |
+| Charts | Recharts (proposed; not in starter yet) |
 
-**Hosting:** existing **htg-zulip OVH VPS, Singapore**, alongside Zulip; upgrades shown in panel on 2026-10-23 as **2 vCores / 8 GB RAM / 80 GB disk**. The upgrades and free headroom **are not yet verified from within the OS after reboot**.
+**Hosting candidate:** existing **htg-zulip OVH VPS, Singapore**, alongside Zulip; upgrade shown in panel on 2026-10-23 as **2 vCores / 8 GB RAM / 80 GB disk**. Actual guest-OS resources, current free headroom and post-reboot service health **are not yet verified**. Develop and test the database **locally first**; never assume VPS readiness.
 
 **Deployment gates:** perform backups first; inspect current services, Docker restart policies, firewall and SSH/console recovery. Reboot only in an approved window. Check Linux sees CPU/RAM/disk (filesystem may require independent expansion); confirm Zulip, PM2, Nginx, HTTPS, firewall and other sites recover. Only then deploy Aeternum as **separate Docker Compose project/volumes/database**.
 
@@ -180,6 +206,7 @@ Each evidence item stores file checksum, event ID, original filename, capture ti
 | `member_action_cases`, `action_comments`, `action_audit` | Private officer investigations, member reasons and resolution history |
 | `evidence`, `import_batches` | Source images, hashes, extraction metadata, reviewed changes |
 | `users`, `sessions`, `audit_log` | Auth, role access and audit tracking |
+| `team_plans`, `team_plan_slots` (future) | Event-specific planned squad assignments; separate from observed participation |
 
 Use sufficiently wide numeric types for billion-scale damage; `NULL` for missing, never `0`. Define uniqueness around event/member/battlefield/team and upserts only after review.
 
@@ -192,48 +219,59 @@ Use sufficiently wide numeric types for billion-scale damage; `NULL` for missing
 - Attendance: checkpoint evidence, completeness, recurring offline observations, confirmed participation and reason/action follow-up.
 - Member Profile: individual chronology of GR, event contribution, attendance and **restricted** officer case history.
 - Google Sheets: reviewed exports and audit-friendly reports with private notes excluded.
+- **Future:** team/party planner view and shareable assignments, without conflating planned roster with actual participation.
 
 **Do not infer player skill purely from GR/DPS.** Different bosses, opponents, roles, uptime, buffs and objectives complicate comparison.
 
-## 8. Delivery roadmap
+## 8. Delivery roadmap (revised 2026-11-10)
+
+**Sequence:** Local foundation → member baseline → attendance/action workflow → event performance → optional team planning. VPS preflight is a **gate before deployment**, not a blocker to local development. Google evidence/reporting work can be integrated incrementally when the core records are stable.
 
 | Phase | Scope | Exit criterion |
 |---|---|---|
-| **0 — Infra preflight** | Safe reboot / post-upgrade Zulip health; port/firewall, storage, backup review | Existing services confirmed healthy; real capacity measured |
-| **1 — Foundation** | Monorepo, React, Express, private PostgreSQL, schema migrations, local credentials | App works locally; auth + CRUD + tests |
-| **2 — Members** | Roster import, aliases, weekly GR, membership tracking | Weekly snapshot with validation/history |
-| **3 — Mirror World** | Boss catalog, session, screenshot parsing/review, DPS & trends | Real screenshot can be reviewed/imported and charted |
-| **4 — League/Siege** | Five League layouts, Siege compound columns, team context | Multi-tab merging and accurate result history |
-| **5 — Attendance/Actions** | 3 checkpoints, assessments, explanations, officer notes | Audit-backed cases and attendance review |
-| **6 — Integrations** | Private Drive evidence; Sheets import/export; OCR quality testing | Traceable evidence, controlled sync, recoverable backup |
+| **0 — Align repo / local baseline** | Update North Star, AI backlog/decisions/handoff, correct prototype README, inspect existing code and test build | Documentation matches decisions; existing prototype understood without promising backend functionality |
+| **1 — Shared foundation (local)** | Keep reusable React code; add Express/TS, PostgreSQL/Drizzle migrations, auth/roles, API validation, tests | Local API + private Postgres + web CRUD tested; no live Zulip changes |
+| **2 — Members + weekly GR** | Member IDs/aliases, class/role, roster import/review, verified weekly GR, history, new/old comparison | Can create, review and retrieve a full weekly roster baseline without overwriting history |
+| **3 — Attendance + Member Action Center** | BEFORE/DURING/AFTER capture, completeness, careful assessments, officer reasons/comments, audit and permissions | Real checkpoint set can be reviewed; unknown ≠ absent; sensitive explanations stay private |
+| **4 — Event performance** | Mirror World first (boss metadata, 900s rate), then Guild League's five tabs and Guild Siege; evidence review and trends | Screenshots correctly map to reviewed rows, with units, duplicates and team/player separation tested |
+| **5 — Team Planner (future)** | Manual plans, configurable team slots, role alerts, optional auto-fill, share/print | Assignments can be edited without altering attendance or sensitive records |
+| **6 — Integrations/hardening + deployment** | Private Drive evidence, controlled Sheets import/export, local OCR benchmark, encrypted offsite backups, VPS preflight and deployment | Recovery tested, permissions enforced, existing Zulip services healthy |
 
-Every feature must include basic validation, authorization where relevant, duplicate protection, usable UI, and sufficient tests/documentation.
+**VPS pre-deployment gate:** confirm recoverable backups, SSH/console access, live OS CPU/RAM/disk/filesystem, container restart policies, Zulip/PM2/Nginx health, firewall (IPv4/IPv6), and resource headroom. Deploy an isolated Aeternum Compose project only after those checks. Do not take the reboot for granted.
+
+Every feature must include basic validation, authorization where relevant, duplicate protection, usable UI, and sufficient tests/documentation. The initial React-only browser demo is **not** proof these exit criteria are met.
 
 ## 9. Open questions and explicit uncertainties
 
-1. Does the guild **Rating** field equal the desired **Gear Rating**?
+1. Does the guild **Rating** field equal the desired **Gear Rating**? Do not map automatically until confirmed.
 2. What weekday/time defines the reporting week's GR baseline?
-3. Complete Mirror World boss rotation, and boss race/size/element-level reference list?
+3. Complete Mirror World boss rotation and boss race/size/element-level reference list?
 4. Does 900 seconds always reflect the full Mirror World damage measurement window?
 5. Exact wording of Sub battlefield's minion-related Strategy field?
 6. Guild League duration if actual DPS-rate is desired?
 7. What exactly is the Guild Siege `Emperium` column's second value?
-8. How should we define required activity attendance, excused absence and AWOL/AFK policy?
-9. Who may read officer case notes and who may export membership data?
-10. Which Google account will authorize private Drive/Sheets and which scopes are needed?
-11. Actual VPS resources/OS filesystem size after reboot and Zulip's steady-state load?
-12. OCR accuracy with real mixed-language names and scrolling screens?
+8. How should we define required attendance, excused absence and AWOL/AFK policy? Which cases need officer approval?
+9. Who may read officer case notes, edit records and export membership data?
+10. Which Google account will authorize private Drive/Sheets, and what scopes are appropriate?
+11. Actual VPS resources/OS filesystem size and Zulip's steady-state load before hosting Aeternum?
+12. OCR accuracy with mixed-language names, alternate resolutions and scrolling screens?
+13. Team planner: capacity per event, healer/class rules, competing assignments, manual overrides and whether officers want auto-fill?
+14. Are Guild Auction and Polarity Zone features truly needed by Aeternum? They remain deferred.
 
-## 10. Immediate next steps
+## 10. Immediate next actions
 
-- [ ] Keep this document updated through deliberate decisions and small PRs.
-- [ ] Confirm GitHub integration permissions; current read works but attempted content write returned 403.
-- [ ] Backup/check/reboot the upgraded OVH host safely, then verify Zulip and live resources before adding the app.
-- [ ] Confirm guild Rating vs GR and reporting week definition.
-- [ ] Implement app skeleton + roster snapshots before automating complex OCR.
-- [ ] Use Mirror World as the first measured extraction template; iterate through Guild League, Guild Siege, attendance.
+- [x] Initial North Star, agent instructions and React/Vite demo committed to GitHub.
+- [x] Connected GitHub read/write verified via committed `AI/HANDOFF.md` update.
+- [ ] Align `AI/TASKS.md`, `AI/DECISIONS.md`, `AI/HANDOFF.md`, and the legacy `README.md` with this revised baseline.
+- [ ] Verify the React starter can build and document actual behavior.
+- [ ] Confirm guild Rating vs GR, reporting week start, and officer permissions.
+- [ ] Implement local Express + PostgreSQL integration, then member roster / weekly snapshot workflow.
+- [ ] Prototype three-checkpoint attendance and private officer case review.
+- [ ] Implement Mirror World first for event-performance OCR once the core data model works.
+- [ ] Separately verify OVH/Zulip upgrade, backups and resource headroom before **any** VPS deployment.
 
 ---
 
 **Change log**
+- **2026-11-10:** Audited against verified repository state and later reference UI discussion; closed stale GitHub 403 note; acknowledged React-only prototype; added **future** Team Planner, deferred Auction/Polarity Zone, moved Attendance/Member Actions before complex performance OCR, and moved screenshot examples out of product policy.
 - **2026-10-23:** Initial requirements North Star consolidated from screenshot analysis, agreed workflows, cloud integration approach and VPS planning. Documenting plans **does not mean the application has been deployed**.
