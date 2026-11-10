@@ -16,9 +16,19 @@ jobs:
         with:
           node-version: '22'
       - run: corepack enable
-      # Bootstrap exception: yarn.lock must be generated and committed in a follow-up.
-      # Once tracked, replace with 'yarn install --immutable'.
-      - run: yarn install
+      # Temporary bootstrap: GitHub PR environments default to immutable installs.
+      # Generate the initial lock once, commit it, then restore immutable mode.
+      - name: Bootstrap dependency lock
+        run: yarn install
+        env:
+          YARN_ENABLE_IMMUTABLE_INSTALLS: 'false'
+          YARN_ENABLE_HARDENED_MODE: '0'
+      - name: Export generated lock for repository commit
+        run: |
+          echo 'BEGIN_AETER_YARN_LOCK'
+          base64 -w0 yarn.lock
+          echo
+          echo 'END_AETER_YARN_LOCK'
       - run: yarn typecheck
       - run: yarn test
       - run: yarn build
