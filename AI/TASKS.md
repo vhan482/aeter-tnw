@@ -9,7 +9,7 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Verify a clean install/build of the starter, including typecheck, before modifying UI flows.
 
 ## P0 — Planning cleanup (local work; no VPS changes)
-- [x] Update North Star from October 2023 [sic] to November 2026, including the future Team Planner and deferred ideas.
+- [x] Update North Star from October 2026 to November 2026, including the future Team Planner and deferred ideas.
 - [ ] Confirm roster `Rating` vs GR and weekly reporting reset.
 - [ ] Agree officer/member permissions and private export rules.
 - [ ] Baseline code/test readiness, then choose incremental backend integration rather than a destructive rewrite.
