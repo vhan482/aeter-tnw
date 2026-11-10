@@ -1,7 +1,7 @@
 # Aeternum TNW — Product North Star
 
-> **Status:** Phase 2B merged and running on bastion; Phase 3 attendance/action work in development  
-> **Updated:** 2026-11-10 (Asia/Manila)  
+> **Status:** Phase 2B running on bastion; Phase 3 code merged (deployment verification pending); WebP class icons approved as future UI work  
+> **Updated:** 2026-11-11 (Asia/Manila)  
 > **Repository:** https://github.com/vhan482/aeter-tnw  
 > **Game:** Ragnarok: The New World (TNW)  
 > **Guild:** Aeternum
@@ -18,17 +18,17 @@ Build a **cost-conscious, self-hosted guild operations and analytics dashboard**
 
 **Success means accurate historical data that saves clerks and officers time, rather than a flashy dashboard built on unreliable OCR.** This is a guild hobby project, not an enterprise platform.
 
-## Current project baseline (verified 2026-11-10)
+## Current project baseline (verified 2026-11-11)
 
 - **GitHub:** `vhan482/aeter-tnw`, public, `main`, with `NORTH_STAR.md`, `AGENTS.md`, and `AI/` documentation. Direct GitHub file writes were **successfully verified** by the 2026-10-23 `AI/HANDOFF.md` commit; the old 403 access issue is closed.
 - **Local frontend prototype:** React/Vite/TypeScript `src/App.tsx` with basic Members, Gear, Events, Attendance, Performance and Evidence CRUD, localStorage + IndexedDB, and ExcelJS import/export. **Prototype only**; browser storage is not a shared guild database. Existing import replaces browser records after a warning.
-- **Implementation status:** Yarn 4 + Express health/readiness and initial local PostgreSQL roster migrations were merged in PR #1. Officer-only authentication was merged in PR #2. **Deployed:** PR #3 PostgreSQL roster/weekly GR, officer-only login and Nginx/HTTPS on the bastion, verified from live deployment logs and browser screenshot on November 11. **Not yet delivered:** Drive/Sheets sync, OCR, attendance capture, Member Action Center, and team planner.
+- **Implementation status:** Yarn 4 + Express health/readiness and initial local PostgreSQL roster migrations were merged in PR #1. Officer-only authentication was merged in PR #2. **Deployed:** PR #3 PostgreSQL roster/weekly GR, officer-only login and Nginx/HTTPS on the bastion, verified from live deployment logs and browser screenshot on November 11. **Phase 3 status:** attendance, private Member Action Center and seven-day local screenshot storage code merged via PR #4; production rollout/browser verification of these modules not yet confirmed. **Not implemented:** Drive/Sheets sync, OCR, Team Planner, and WebP job icon integration.
 - **Hosting:** Deployed to Debian 13 Bastion/Inspector utility VPS with native PostgreSQL 17, systemd Express and Nginx HTTPS. Existing SSH management role makes network isolation, resource monitoring, MFA/access gate and host hardening outstanding tasks. Zulip is not the hosting target.
 - **Reference UI:** The RONW Guild Management Tool screenshots inspired future team planning and dashboard workflows. They are **design references, not Aeternum member data, licensed source code, or proof that those features exist here**.
 
-**Delivered:** [PR #1](https://github.com/vhan482/aeter-tnw/pull/1) was merged on 2026-11-10: Yarn 4, Express health/readiness, local PostgreSQL and tracked initial roster migrations. **Delivered:** Officer-only authentication PR #2 merged 2026-11-10. **Delivered:** PR #3 merged; server-backed Member Registry and weekly GR running at https://aeternum.eleven22.io. **In-flight:** Phase 3 attended event/checkpoint recording and private officer casework. OCR, private Drive evidence storage and Sheets sync are not yet implemented.
+**Delivered:** [PR #1](https://github.com/vhan482/aeter-tnw/pull/1) was merged on 2026-11-10: Yarn 4, Express health/readiness, local PostgreSQL and tracked initial roster migrations. **Delivered:** Officer-only authentication PR #2 merged 2026-11-10. **Delivered:** PR #3 merged; server-backed Member Registry and weekly GR running at https://aeternum.eleven22.io. **Merged:** [PR #4](https://github.com/vhan482/aeter-tnw/pull/4) includes Phase 3 event/checkpoint recording, officer casework and seven-day local screenshot retention. Live deployment of PR #4 is not yet verified. OCR, Google Drive integration and Sheets sync are not implemented.
 
-**Scope convention:** Sections 3.1–3.6 are the **core planned product**. Section 3.7 is an **approved future direction** after core workflows. Section 3.8 lists **deferred ideas**, not commitments. Exact implementation choices remain subject to tests and user review.
+**Scope convention:** Sections 3.1–3.6 are the **core planned product**. Section 3.7 is the approved-future Team Planner. Section 3.8 lists **deferred ideas**, not commitments. Section 3.9 is an **agreed visual enhancement**, not shipped functionality or approved reuse of third-party artwork. Exact implementation choices remain subject to tests and user review.
 
 ## 2. Non-negotiable principles
 
@@ -151,6 +151,36 @@ Use the existing roster, **weekly GR**, class/role, and member availability to h
 - **Universal cross-role performance score:** defer; raw class/role-aware metrics are more trustworthy.
 - **Live OCR AI API, full automation or advanced optimization:** defer until a local OCR benchmark demonstrates need.
 
+### 3.9 Job class icon registry and class colors (agreed future UI enhancement)
+
+**Reference:** The user supplied a screenshot of a job-class icon grid and noted that the icons are individually downloadable WebP images. That screenshot is a **visual/taxonomy reference**, not proof of asset licensing or a definitive in-game class roster. The reference shows **38 class labels**, including newly marked Sage, Scholar, Rogue and Stalker. Do not treat the site's "NEW" badges as our own release information without verification.
+
+**Reference labels to support initially** (verify spelling and availability against TNW itself when building the registry):
+
+| Visual family / suggested color | Class labels shown in reference |
+|---|---|
+| Swordman / red | Swordman, Knight, Lord Knight, Crusader, Paladin |
+| Mage / blue | Mage, Wizard, High Wizard, Sage, Scholar |
+| Archer / amber-orange | Archer, Hunter, Sniper, Bard, Clown, Dancer, Gypsy |
+| Acolyte / green | Acolyte, Priest, High Priest, Monk, Champion |
+| Thief / violet | Thief, Assassin, Assassin Cross, Rogue, Stalker |
+| Merchant / orange | Merchant, Blacksmith, Whitesmith, Alchemist, Creator |
+| Gunslinger / brown-red | Gunslinger, Rebel, Night Watch |
+| Druid / teal | Druid, Kanos, Alithea |
+
+**Design and implementation contract:**
+
+- Store individually optimized icons as **static, version-controlled** WebP assets, e.g. `public/assets/job-icons/creator.webp`, **only after confirming the files are legally redistributable**. Being downloadable does not authorize copying into a public GitHub repository. If rights are unclear, create original compatible icons or use licensed alternatives; never hotlink private/untrusted third-party artwork.
+- Use a single typed mapping, e.g. `jobClassId -> { displayName, family, iconPath, colorToken, aliases }`, with normalized/Unicode-safe lookup and a graceful **Unknown Class** fallback. The registry is presentation metadata, not an authority for member identity.
+- Use consistent class-family accent colors, but never rely on color alone: include class text and accessible `alt` labels. Keep status colors (success/warning/error) separate from class colors; retain adequate contrast in the existing dark command-center theme.
+- Make icons small, optimized and lazy-loaded where useful. Keep stable intrinsic dimensions to avoid roster/table layout shifts. Avoid adding 38 external network requests to unrelated pages or doing on-the-fly image processing on the low-resource bastion.
+- Show class icons and names in **Member Registry, Attendance, weekly GR/member cards, Guild League/Guild Siege results, performance filters and future Team Planner slots**. Reuse the same registry throughout; don't hardcode separate paths/colors in each screen.
+- **Do not infer combat role, guild rank, performance or participation from class alone.** In particular, Creator/Alchemist can have different builds; member `jobClass`, `combatRole` and `guildRole` remain independent.
+- Preserve an **original Aeternum emblem** and a consistent navigation icon vocabulary. Use functional, licensed iconography for roster, event calendar, league, siege, evidence, analytics and restricted actions; do not copy another site's logo or proprietary layout wholesale.
+- These permanent frontend assets are **not** attendance evidence. Never store them under `/var/lib/aeter/uploads` or subject them to the seven-day screenshot cleanup.
+
+**Done when:** rights/licensing are reviewed; the 38 reference labels and real TNW naming differences are audited; each supported class has a tested icon/fallback and consistent responsive styling; Member Registry and Attendance render icons without regressing CRUD or screen readers. Other modules can adopt the same registry incrementally. No schema migration is required merely to render icons.
+
 ## 4. Extraction and data workflow
 
 1. Clerk creates or selects event/weekly snapshot with required date, boss/opponent and battlefield as appropriate.
@@ -235,6 +265,7 @@ Use sufficiently wide numeric types for billion-scale damage; `NULL` for missing
 | **1 — Shared foundation (local)** | Keep reusable React code; add Express/TS, PostgreSQL/Drizzle migrations, auth/roles, API validation, tests | Local API + private Postgres + web CRUD tested; no live Zulip changes |
 | **2 — Members + weekly GR** | Member IDs/aliases, class/role, roster import/review, verified weekly GR, history, new/old comparison | Can create, review and retrieve a full weekly roster baseline without overwriting history |
 | **3 — Attendance + Member Action Center** | BEFORE/DURING/AFTER capture, completeness, careful assessments, officer reasons/comments, audit and permissions | Real checkpoint set can be reviewed; unknown ≠ absent; sensitive explanations stay private |
+| **3.5 — Class icons / UI polish (future)** | Build a licensed WebP class icon registry, family colors, reusable roster/attendance cards and consistent navigation iconography | Names/colors centrally mapped, fallback accessible, assets permission-reviewed and optimized |
 | **4 — Event performance** | Mirror World first (boss metadata, 900s rate), then Guild League's five tabs and Guild Siege; evidence review and trends | Screenshots correctly map to reviewed rows, with units, duplicates and team/player separation tested |
 | **5 — Team Planner (future)** | Manual plans, configurable team slots, role alerts, optional auto-fill, share/print | Assignments can be edited without altering attendance or sensitive records |
 | **6 — Integrations/hardening + deployment** | Private Drive evidence, controlled Sheets import/export, local OCR benchmark, encrypted offsite backups, VPS preflight and deployment | Recovery tested, permissions enforced, existing Zulip services healthy |
@@ -275,6 +306,7 @@ Every feature must include basic validation, authorization where relevant, dupli
 ---
 
 **Change log**
+- **2026-11-11:** Added agreed future 38-class WebP icon registry and class-family color system from user-supplied visual reference; preserved role/GR separation, asset-licensing gate and permanent-vs-expiring file distinction. Updated Phase 3 status to merged code, not confirmed live deployment.
 - **2026-11-10:** Audited against verified repository state and later reference UI discussion; closed stale GitHub 403 note; acknowledged React-only prototype; added **future** Team Planner, deferred Auction/Polarity Zone, moved Attendance/Member Actions before complex performance OCR, and moved screenshot examples out of product policy.
 - **2026-10-23:** Initial requirements North Star consolidated from screenshot analysis, agreed workflows, cloud integration approach and VPS planning. Documenting plans **does not mean the application has been deployed**.
 
@@ -283,7 +315,7 @@ Every feature must include basic validation, authorization where relevant, dupli
 
 - `feat/phase3-attendance-action-center` records separate occurrence, checkpoint, explicit member observations and officer assessments. **No automatic inference of absence from missing screenshot rows.**
 - Roles: Clerks may record event checkpoints and reviewed online/offline/unknown observations. Only Guild Leaders and Officers can read/write final assessment rationale and private Member Action Center cases, reports and audit history.
-- Checkpoint evidence is currently a **filename/reference only**. Local file storage, Drive uploads, OCR and hash validation remain future work.
+- Phase 3 PR #4 now includes private Multer image upload, SHA-256 metadata and seven-day retention as merged code. Its live deployment is **not verified**; OCR and Google Drive integration remain future work.
 - Cases, notes and officer decisions are **manual and private**, with append-only change timelines. AWOL/AFK policy remains unverified.
 - The user intentionally deferred backup/restore setup for this personal deployment. This is a risk acceptance, **not** assurance of recoverability; avoid destructive migrations and keep SSH/bastion operations untouched during feature development.
 
