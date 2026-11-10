@@ -62,7 +62,14 @@ function noStore(_req: Request, res: Response, next: NextFunction) {
 }
 function conflict(res: Response) { return res.status(409).json({ error: 'Record changed or already exists; reload before editing' }); }
 function isUniqueViolation(error: unknown) {
-  return !!error && typeof error === 'object' && 'code' in error && error.code === '23505';
+  // Drizzle wraps PostgreSQL errors. Inspect only error codes, never SQL parameters,
+  // so duplicate names/snapshots return 409 without exposing query contents.
+  let current: unknown = error;
+  for (let i = 0; i < 4 && current && typeof current === 'object'; i++) {
+    if ('code' in current && current.code === '23505') return true;
+    current = 'cause' in current ? current.cause : undefined;
+  }
+  return false;
 }
 
 /** All routes below inherit the existing server-side officer-session and first-login protections. */
