@@ -1,6 +1,8 @@
-# TNW Guild Operations — v0.1
+# Aeternum TNW Guild Operations — frontend prototype v0.1
 
-React + TypeScript web MVP for Ragnarok: The New World guild tracking.
+React + TypeScript **local/browser-only prototype** for Ragnarok: The New World guild tracking.
+
+> **Important:** This is not the final shared guild application. The requirements and target architecture live in [NORTH_STAR.md](NORTH_STAR.md), with AI coding instructions in [AGENTS.md](AGENTS.md) and the [AI/](AI/) folder. The current implementation does **not** contain PostgreSQL, Express, a shared login, Google integration, OCR, Member Action Center or Team Planner.
 
 ## Run locally
 
@@ -36,7 +38,7 @@ Excel tabs: `Dashboard` (summary), `Members`, `Gear`, `Events`, `Attendance`, `P
 
 Records are persisted in browser `localStorage`; uploaded evidence images are persisted in browser `IndexedDB` **only**. Excel export contains image filename/source references but **does not embed image binaries**. Imported Excel does not transfer screenshot images. Clearing your browser storage will lose local data without a backup.
 
-Do **not** use this local demo for shared guild access, or assume guild officers can see the same data. For production, migrate to Supabase Auth + Postgres + private Storage + Row Level Security; make Postgres authoritative, treat Excel as import/export/backup, and hold OpenAI API keys only in protected server functions. Automated screenshot extraction should produce a draft validated against the current roster/event/gear schema and require clerk approval before saving. Add audit logs and scoped guild permissions.
+Do **not** use this local demo for shared guild access, or assume officers can see the same data. The **planned** shared deployment is a self-hosted Express/TypeScript API with PostgreSQL, local credentials/role-scoped sessions, private Google Drive evidence storage, and controlled Google Sheets import/export — **no Supabase dependency**. OCR will be local/free-first, with human review and authorization before saving. See [NORTH_STAR.md](NORTH_STAR.md) for the current delivery roadmap. The current Excel import replaces the prototype's browser records after confirmation; export a backup first.
 
 ## Reliability notes
 
