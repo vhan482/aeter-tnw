@@ -91,9 +91,13 @@ export function registerEvidenceRoutes(app:Express,pool:pg.Pool,guards:Guards,co
     windowMs:60*60*1000,limit:30,standardHeaders:'draft-7',legacyHeaders:false,
     message:{error:'Too many screenshot uploads; try later'}
   });
+  // Multer's published typings can resolve a separate Express core declaration.
+  // Bridge the identical runtime request shape locally rather than weakening app-wide types.
+  const runUpload=upload as unknown as
+    (req:Request,res:Response,callback:(error?:unknown)=>void)=>void;
   const multipart: (req:Request,res:Response,next:NextFunction)=>void =
     (req,res,next)=>{
-      upload(req,res,(error?:any)=>{
+      runUpload(req,res,(error?:unknown)=>{
         if(!error){next();return;}
         if(error instanceof multer.MulterError){
           if(error.code==='LIMIT_FILE_SIZE'){httpStatus(413,'Image exceeds 5 MB',res);return;}
