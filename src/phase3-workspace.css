@@ -27,3 +27,8 @@
 .roster-nav-active,.roster-nav-muted{border:0;text-align:left;width:100%;background:transparent;cursor:pointer;font-family:inherit}
 button.roster-nav-active{background:#233653}.roster-nav-muted:hover{background:#1c2b3e;color:#dae5f2}
 @media(max-width:1000px){.phase-grid{grid-template-columns:1fr}}
+
+.phase-file-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 0;border-top:1px solid #32455c;font-size:12px;color:#c9d8eb}
+.phase-file-row a{color:#e4c18d;text-decoration:underline}
+.phase-file-row .phase-expired{color:#a0aec1;font-style:italic}
+.phase-field input[type="file"]{max-width:100%;font-size:12px}
