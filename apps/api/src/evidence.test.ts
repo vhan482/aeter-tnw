@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtemp, readdir, rm, stat } from 'node:fs/promises';
+import { mkdtemp, readdir, rm, utimes, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import pg from 'pg';
@@ -50,6 +51,10 @@ test('7-day private screenshot upload, signature rejection, expiry metadata, sec
       await leader.post(root).set('Origin',origin)
         .attach('image',Buffer.from('not an actual image'),{filename:'fake.png',contentType:'image/png'})
         .expect(415);
+      await leader.post(root).set('Origin',origin)
+        .attach('image',Buffer.alloc(5*1024*1024+1),{filename:'oversized.png',contentType:'image/png'})
+        .expect(413);
+      assert.equal((await readdir(dir)).length,0,'Oversized upload must not retain a partial file');
       const upload=await leader.post(root).set('Origin',origin)
         .attach('image',png,{filename:'roster.png',contentType:'image/png'}).expect(201);
       const id=upload.body.evidence.id as string;
@@ -91,6 +96,14 @@ test('7-day private screenshot upload, signature rejection, expiry metadata, sec
       assert.equal(outcome.expired,1);
       const remaining=await readdir(dir);
       assert.equal(remaining.length,0);
+      const orphan=randomUUID();
+      const orphanPath=join(dir,orphan);
+      await writeFile(orphanPath,png);
+      const twoHoursAgo=new Date(Date.now()-2*60*60*1000);
+      await utimes(orphanPath,twoHoursAgo,twoHoursAgo);
+      const orphanSweep=await expireEvidence(pool,dir,new Date());
+      assert.equal(orphanSweep.orphans,1,'Old aborted uploads must be removed');
+
       const [row]=await db.select().from(attendanceEvidence).where(eq(attendanceEvidence.id,id));
       assert.ok(row.deletedAt);
       assert.equal((await leader.get(checkpointBase+'/'+eventId).expect(200)).body.evidence[0].status,'EXPIRED');
