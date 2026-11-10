@@ -1,7 +1,7 @@
 import argon2 from 'argon2';
 
 const OPTIONS = {
-  type: argon2.argon2id,
+  type: argon2.argon2id as 2,
   memoryCost: 19 * 1024,
   timeCost: 2,
   parallelism: 1
