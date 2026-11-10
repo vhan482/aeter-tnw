@@ -59,3 +59,13 @@
 - Only the guild roster can be imported when the server roster is empty. Legacy screenshots and full record migration are **out of scope**.
 - The management API must retain the authenticated Officer/Clerk gate and the temporary-password guard.
 - Do not deploy or modify the Bastion/Inspector utility server before its separate security/capacity preflight.
+
+
+## Phase 3 development in progress (2026-11-11)
+
+- PR #3 merged and verified live: `aeternum.eleven22.io` exposes HTTPS, officer login, server-backed Member Registry and PostgreSQL 17 locally on the bastion.
+- Phase 3 feature branch: `feat/phase3-attendance-action-center`; **do not deploy until generated SQL migration + integration CI pass and PR is reviewed**.
+- New attendance types: GUILD_LEAGUE, HAZY_FOREST, GUILD_SIEGE; checkpoints BEFORE/DURING/AFTER; evidence coverage COMPLETE/PARTIAL/UNKNOWN; member statuses ONLINE/OFFLINE/UNKNOWN, no missing-row inference.
+- Leader/Officer may review assessments and confidential member-action cases; CLERK records raw checkpoints only. Never automatically assign AFK, AWOL or absence dispositions.
+- Screenshot/file evidence is a text reference only; no OCR or image upload in this PR.
+- User opted to skip backup/restore on the personal deployment, so **warn about potential irrecoverable data loss without blocking local development**. No destructive migrations and no unapproved VPS changes.

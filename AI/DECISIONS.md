@@ -43,6 +43,11 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 | D-034 | Proposed | Optimistic version checks and audit trails for roster and weekly GR corrections | Avoid lost edits and retroactive history loss when officers work concurrently |
 | D-035 | Proposed | No inferred Gear Rating from unverified roster Rating column | GR requires an explicit reviewer acknowledgment and source filename/reference |
 
+| D-036 | Agreed | Phase 3 captures event-specific BEFORE/DURING/AFTER screenshot observations manually before OCR | Multiple captures per phase, explicit observations only; partial visibility does not equal offline |
+| D-037 | Proposed | Clerks capture raw observations; Leader/Officer alone can assess participation and access private action cases | Least privilege for personal explanations and disciplinary decisions; review with guild if permissions change |
+| D-038 | Agreed | AFK/AWOL follow-up cases are opened and decided manually, never generated from online/offline indicators | Respect unverified guild policy and evidence quality |
+| D-039 | Deferred by user | Off-server database backup/restore work on personal deployment | User chose to skip for now; server loss can permanently destroy attendance, cases and roster data |
+
 ## New decision template
 
 ```markdown

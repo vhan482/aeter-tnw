@@ -101,3 +101,15 @@ Each member has one weekly GR snapshot per chosen `weekStart`; **do not assume**
 **Legacy browser roster import:** only when the server roster is completely empty, press "Preview browser roster import" on the same browser that holds the old `tnw-guild-ops-v1` localStorage key. Inspect **all rows**, confirm that only member profiles will migrate, then import. This maps legacy IDs to new UUIDs and preserves the original browser storage. Gear, event, attendance and screenshot evidence are *not* migrated. If member names/IDs collide or the server roster is nonempty, import fails rather than silently merging characters. Export/backup the original workbook and screenshot evidence separately before any manual cleanup.
 
 Auth, API and migration integration tests run in CI against an isolated PostgreSQL 17 service. The bastion remains out of scope until independently approved.
+
+
+## Phase 3: Attendance and private officer cases (feature PR)
+
+- Yarn remains pinned. On a fresh development PostgreSQL, apply reviewed `0003` migration with `yarn db:migrate` before starting API. **Never use `yarn db:generate` on the bastion**.
+- Sidebar provides Attendance & Evidence for all authenticated staff; Member Action Center only for Guild Leader/Officer. Server also rejects Clerk requests to the private endpoints.
+- Attendance events: Guild League, Hazy Forest, Guild Siege. Add Before, During, After checkpoints. Multiple screenshots per phase, each with explicit coverage flag, captured time and filename/source reference.
+- Record **only** explicitly observed members as ONLINE/OFFLINE/UNKNOWN. No row means *not observed*. Even an explicit OFFLINE does not establish event absence. Correct wrong observations with versioned audit.
+- Reviewed participation assessment is separate; LIKELY_ABSENT requires explicit complete-coverage offline observations in all three phases; CONFIRMED_PARTICIPATED requires recorded direct battle or officer confirmation reference.
+- The Action Center is restricted to Leader/Officer. Member-reported explanations and officer comments are separate append-only notes. No automatic AFK/AWOL flag.
+- No screenshot upload, OCR or private Drive storage in this phase. Do not treat filenames as proof of file existence.
+- User deferred DB backup/restore. Avoid destructive migrations and explicitly acknowledge the possibility of unrecoverable loss; backup/restore remains advisable before real officer cases contain sensitive data.
