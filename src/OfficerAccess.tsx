@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import App from './App';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import RosterWorkspace from './RosterWorkspace';
 import './officer-access.css';
 
 type Role = 'GUILD_LEADER' | 'OFFICER' | 'CLERK';
@@ -154,6 +154,10 @@ export default function OfficerAccess() {
     } catch(e) {setError(e instanceof Error?e.message:'Password change failed');}
     finally {setBusy(false);}
   }
+  const expireSession = useCallback(() => {
+    setOfficer(null);setManage(false);setPhase('guest');
+    setError('Session expired. Sign in again.');
+  }, []);
   async function logout() {
     setBusy(true);setError('');
     try {
@@ -189,7 +193,7 @@ export default function OfficerAccess() {
     <button type="button" onClick={()=>void logout()} disabled={busy}>Sign out</button>
   </section></main>;
   return <>
-    <App officer={officer} onSignOut={()=>void logout()} onManageOfficers={()=>setManage(true)} />
+    <RosterWorkspace officer={officer} onSignOut={()=>void logout()} onManageOfficers={()=>setManage(true)} onExpired={expireSession} />
     {error && <div className="officer-global-error" role="alert">{error}</div>}
     {manage && officer.role==='GUILD_LEADER' && <OfficerManager onClose={()=>setManage(false)} />}
   </>;

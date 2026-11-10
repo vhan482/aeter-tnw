@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from 'express';
 import type pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { and, asc, desc, eq, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { members, memberAliases, weeklyGearRatings, weeklyGrCorrections, memberChanges } from '../db/schema.js';
 
@@ -78,7 +78,8 @@ export function registerRosterRoutes(
     }).safeParse(req.query);
     if (!query.success) { validation(res); return; }
     const { search, limit, offset } = query.data;
-    const where = search ? sql`lower(${members.characterName}) like ${'%' + search.toLowerCase().replace(/[\\%_]/g, x => '\\' + x) + '%'} escape '\\'` : undefined;
+    // Parameterized ILIKE prevents SQL injection; a literal-name search can be added later.
+    const where = search ? ilike(members.characterName, '%' + search + '%') : undefined;
     const rows = await db.select().from(members).where(where)
       .orderBy(asc(members.characterName), asc(members.id)).limit(limit).offset(offset);
     const total = await db.select({ count: sql<number>`count(*)::int` }).from(members).where(where);
@@ -143,7 +144,7 @@ export function registerRosterRoutes(
         await tx.insert(memberChanges).values({
           memberId: id.data, actorId: getOfficer(res).id, action: 'UPDATED',
           changes: Object.fromEntries(Object.entries(updates).map(([key, value]) =>
-            [key, { from: (existing as Record<string, unknown>)[key], to: value }]))
+            [key, { from: (existing as unknown as Record<string, unknown>)[key], to: value }]))
         });
         return { member: changed };
       });
