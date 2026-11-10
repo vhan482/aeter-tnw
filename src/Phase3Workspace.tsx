@@ -5,7 +5,8 @@ type Role='GUILD_LEADER'|'OFFICER'|'CLERK';
 type Context={officer:{id:string;role:Role};onExpired:()=>void};
 type Member={id:string;characterName:string};
 type Event={id:string;eventType:string;title:string;startsAt:string};
-type Checkpoint={id:string;eventId:string;phase:'BEFORE'|'DURING'|'AFTER';capturedAt:string;evidenceRef:string;coverage:string};
+type Checkpoint={id:string;eventId:string;phase:'BEFORE'|'DURING'|'AFTER';capturedAt:string;evidenceRef:string;evidenceUploadId:string|null;coverage:string};
+type EvidenceFile={id:string;originalName:string;expiresAt:string;status:'AVAILABLE'|'EXPIRED'|'MISSING'};
 type Observation={id:string;checkpointId:string;memberId:string;status:string;characterName:string;version:number};
 type Assessment={id:string;memberId:string;assessment:string;rationale:string;version:number;verificationMethod:string|null;evidenceRef:string|null};
 type CaseRow={id:string;memberId:string;characterName:string;caseType:string;status:string;version:number;eventId:string|null;assignedOfficerId:string|null;followUpOn:string|null};
@@ -28,6 +29,20 @@ async function api<T>(path:string,options:RequestInit={},onExpired?:()=>void):Pr
     throw new Error(data.error||`Request failed (${response.status})`);}
   return response.status===204?undefined as T:response.json() as Promise<T>;
 }
+async function uploadScreenshot(file:File,onExpired:()=>void):Promise<{id:string;originalName:string;expiresAt:string}>{
+  if(file.size>5*1024*1024)throw new Error('Image exceeds the 5 MB limit');
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Use a PNG, JPEG or WebP image');
+  const data=new FormData();data.append('image',file);
+  const response=await fetch(base+'/attendance/evidence',{method:'POST',body:data,
+    credentials:'same-origin',cache:'no-store'});
+  if(response.status===401)onExpired();
+  const body=await response.json().catch(()=>({})) as {
+    error?:string;evidence?:{id:string;originalName:string;expiresAt:string}
+  };
+  if(!response.ok||!body.evidence)throw new Error(body.error||'Screenshot upload failed');
+  return body.evidence;
+}
+
 function useMembers(onExpired:()=>void){
   const [members,setMembers]=useState<Member[]>([]);
   const [count,setCount]=useState(0);
@@ -53,7 +68,7 @@ export function AttendanceView({officer,onExpired}:Context){
   const {members,count}=useMembers(onExpired);
   const [events,setEvents]=useState<Event[]>([]);
   const [chosen,setChosen]=useState('');
-  const [data,setData]=useState<{event:Event;checkpoints:Checkpoint[];observations:Observation[]}|null>(null);
+  const [data,setData]=useState<{event:Event;checkpoints:Checkpoint[];observations:Observation[];evidence:EvidenceFile[]}|null>(null);
   const [assessments,setAssessments]=useState<Assessment[]>([]);
   const [eventType,setEventType]=useState<typeof eventTypes[number]>('GUILD_LEAGUE');
   const [eventTitle,setEventTitle]=useState('');
@@ -62,6 +77,7 @@ export function AttendanceView({officer,onExpired}:Context){
   const [captured,setCaptured]=useState(localInput);
   const [coverage,setCoverage]=useState<'PARTIAL'|'UNKNOWN'|'COMPLETE'>('PARTIAL');
   const [evidence,setEvidence]=useState('');
+  const [screenshot,setScreenshot]=useState<File|null>(null);
   const [checkpointId,setCheckpointId]=useState('');
   const [memberId,setMemberId]=useState('');
   const [status,setStatus]=useState<'ONLINE'|'OFFLINE'|'UNKNOWN'>('UNKNOWN');
@@ -77,7 +93,7 @@ export function AttendanceView({officer,onExpired}:Context){
     const r=await api<{events:Event[]}>(base+'/attendance/events',{},onExpired);setEvents(r.events);
   },[onExpired]);
   const refreshDetail=useCallback(async(id:string)=>{
-    const r=await api<{event:Event;checkpoints:Checkpoint[];observations:Observation[]}>(base+'/attendance/events/'+id,{},onExpired);
+    const r=await api<{event:Event;checkpoints:Checkpoint[];observations:Observation[];evidence:EvidenceFile[]}>(base+'/attendance/events/'+id,{},onExpired);
     setData(r);
     if(reviewer){const a=await api<{assessments:Assessment[]}>(base+'/attendance/events/'+id+'/assessments',{},onExpired);
       setAssessments(a.assessments);}else setAssessments([]);
@@ -95,10 +111,15 @@ export function AttendanceView({officer,onExpired}:Context){
     await refreshEvents();setChosen(r.event.id);setNotice('Event created. Add reviewed capture references.');
   });}
   function addCheckpoint(e:FormEvent){e.preventDefault();if(!chosen)return;void submit(async()=>{
+    if(!screenshot && evidence.trim().length<3)throw new Error('Select an image or provide a private screenshot reference');
+    // Upload first, link second. If linking fails, an unlinked image is deleted by retention cleanup.
+    const uploaded=screenshot?await uploadScreenshot(screenshot,onExpired):null;
     await api(base+'/attendance/events/'+chosen+'/checkpoints',{method:'POST',body:JSON.stringify({
-      phase,capturedAt:dateInstant(captured),evidenceRef:evidence,coverage
+      phase,capturedAt:dateInstant(captured),evidenceRef:uploaded?.originalName||evidence.trim(),
+      evidenceUploadId:uploaded?.id??null,coverage
     })},onExpired);
-    await refreshDetail(chosen);setEvidence('');setNotice('Checkpoint saved; now record visible member observations.');
+    await refreshDetail(chosen);setEvidence('');setScreenshot(null);
+    setNotice(uploaded?'Private screenshot linked. Image bytes automatically expire after 7 days.':'Evidence reference saved; no image was uploaded.');
   });}
   function addObservation(e:FormEvent){e.preventDefault();if(!chosen||!checkpointId)return;void submit(async()=>{
     await api(base+`/attendance/events/${chosen}/checkpoints/${checkpointId}/observations`,{
@@ -160,15 +181,29 @@ export function AttendanceView({officer,onExpired}:Context){
             <label className="phase-field">Roster page coverage<select value={coverage} onChange={e=>setCoverage(e.target.value as typeof coverage)}>
               <option value="PARTIAL">Partial / cropped</option><option value="UNKNOWN">Unknown</option><option value="COMPLETE">Complete / verified</option>
             </select></label>
-            <label className="phase-field">Screenshot filename / private reference<input required minLength={3} maxLength={255}
+            <label className="phase-field">Upload screenshot (private, kept for 7 days)
+              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>setScreenshot(e.target.files?.[0]||null)}/>
+            </label>
+            {screenshot&&<p className="phase-hint">Selected: {screenshot.name} · {(screenshot.size/1024/1024).toFixed(2)} MB / 5 MB limit</p>}
+            <label className="phase-field">Or provide a screenshot filename / private reference<input maxLength={255}
               value={evidence} onChange={e=>setEvidence(e.target.value)} placeholder="guild-league-before-p1.png"/></label>
-            <button disabled={busy} className="roster-primary">Add evidence checkpoint</button>
+            <p className="phase-hint">Uploaded files are officer-authenticated, deleted after 7 days, and never placed in public website folders. Historical checkpoint references remain.</p>
+            <button disabled={busy||(!screenshot&&evidence.trim().length<3)} className="roster-primary">Add evidence checkpoint</button>
           </form>
           <div className="phase-list">{data.checkpoints.map(c=><button key={c.id} type="button"
             className={checkpointId===c.id?'phase-selected':''} onClick={()=>setCheckpointId(c.id)}>
             <strong>{c.phase} · {stamp(c.capturedAt)}</strong>
             <small>{c.coverage} · {c.evidenceRef} · {data.observations.filter(o=>o.checkpointId===c.id).length} observed</small>
           </button>)}</div>
+          {data.checkpoints.filter(c=>c.evidenceUploadId).map(c=>{
+            const image=data.evidence.find(f=>f.id===c.evidenceUploadId);
+            return <div className="phase-file-row" key={c.id}>
+              <span>{c.phase}: {image?.originalName||c.evidenceRef}</span>
+              {image?.status==='AVAILABLE'?
+                <a href={base+'/attendance/evidence/'+image.id+'/file'} target="_blank" rel="noopener noreferrer">View private image</a>:
+                <span className="phase-expired">Evidence expired or unavailable</span>}
+            </div>;
+          })}
         </>}
       </section>
     </div>
