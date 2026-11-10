@@ -2,55 +2,71 @@
 
 Use this as a working checklist; update checkboxes only after tests/verification. All work is **not started** unless explicitly checked.
 
-## P0 — Before touching live OVH VPS
-- [ ] Verify a recent recoverable backup and console/SSH access.
-- [ ] Review existing Docker policies, Zulip containers, Nginx/PM2 and firewall (IPv4 + IPv6).
-- [ ] Controlled reboot after resource upgrade; verify actual 2 vCores / ~8GB RAM / 80GB device/filesystem.
-- [ ] Verify every existing hosted app, Zulip HTTPS, ports and baseline resource usage.
-- [ ] Decide non-conflicting Nginx hostname and private container networking.
+## Verified existing baseline (not the target backend)
+- [x] React/Vite/TypeScript browser-based CRUD prototype committed (Members, Gear, Events, Attendance, Performance, Evidence).
+- [x] ExcelJS import/export and localStorage/IndexedDB behavior implemented in the prototype.
+- [x] Root AGENTS / North Star / AI folder committed; GitHub read/write verified with a commit.
+- [ ] Verify a clean install/build of the starter, including typecheck, before modifying UI flows.
 
-## P1 — Repository/bootstrap
-- [ ] Add application files, package manager and typecheck/lint/test scripts.
-- [ ] Initialize React/Vite/TS, Tailwind and shadcn/ui UI shell.
+## P0 — Planning cleanup (local work; no VPS changes)
+- [x] Update North Star from October 2023 [sic] to November 2026, including the future Team Planner and deferred ideas.
+- [ ] Confirm roster `Rating` vs GR and weekly reporting reset.
+- [ ] Agree officer/member permissions and private export rules.
+- [ ] Baseline code/test readiness, then choose incremental backend integration rather than a destructive rewrite.
+
+## P1 — Local backend foundation
+- [ ] Preserve/reuse working React components as applicable; introduce Tailwind/shadcn only after checking existing behavior.
 - [ ] Initialize Express/TS, health endpoint and Zod validation.
-- [ ] Docker Compose for isolated PostgreSQL and API, DB migrations.
-- [ ] Local authentication, role matrix and audit logging.
-- [ ] GitHub Actions CI with no production secrets in logs.
+- [ ] Local Docker Compose with isolated PostgreSQL + Drizzle/SQL migrations, no public DB port.
+- [ ] Local authentication, roles, sessions and audit logging.
+- [ ] API ↔ UI integration with safe migration from existing browser data (backup/export first).
+- [ ] GitHub Actions lint/typecheck/test and reproducible build.
 
-## P2 — Member roster
-- [ ] Confirm meaning of roster `Rating` and weekly reset day.
-- [ ] Member CRUD with Unicode aliases, join date and status.
-- [ ] Weekly snapshots with verified GR and editable evidence.
-- [ ] Weekly GR change chart and new-versus-established member comparison.
+## P2 — Member roster + weekly GR
+- [ ] Unicode member identities, aliases, join/leave history, class and role.
+- [ ] Weekly GR snapshot: import proposal, reviewer approval, source evidence, correction history.
+- [ ] GR trend and new-versus-established member analysis.
+- [ ] Enforce missing/unverified GR as NULL, not a copied or assumed value.
 
-## P3 — Mirror World
-- [ ] Boss catalog with race/size/element/level.
-- [ ] Event session creation: date, boss, duration.
-- [ ] Fixed-row OCR candidate extraction for screenshot type.
-- [ ] Clerk review, dedup, save and source evidence link.
-- [ ] Same-boss total damage, 900s average DPS, GR relationship analytics.
+## P3 — Attendance / Member Action Center
+- [ ] BEFORE / DURING / AFTER screenshot observations for Guild League, Hazy Forest and Guild Siege.
+- [ ] Multi-page roster coverage check; unknown ≠ offline and online ≠ participation.
+- [ ] Evidence-based attendance assessment and officer confirmation.
+- [ ] Member-reported reasons kept separate from officer comments and decisions.
+- [ ] AFK/AWOL follow-up queue, action history, role-gated privacy and handover.
+- [ ] Attendance review and private export authorization tests.
 
-## P4 — Guild League / Guild Siege
-- [ ] Main DPS + Support; Sub DPS + Support + Strategy template extraction.
-- [ ] Match context, opponent, stage, result; merge tabs per player/battlefield/team.
-- [ ] Player-vs-team stat separation and zero/unknown behavior.
-- [ ] Siege compound-column parser with unresolved Emperium metric neutral.
-- [ ] Role-specific damage, support, defense, objectives and points trends.
+## P4 — Performance screenshots (incremental)
+- [ ] Mirror World first: boss catalog race/size/element/level, 900s estimate, same-boss GR comparisons.
+- [ ] Guild League: Main DPS/Support, Sub DPS/Support/Strategy, match context, player-identity merging.
+- [ ] Guild Siege: K/D/A, points, healing/damage and neutral Emperium metric until verified.
+- [ ] Clerk OCR candidate review, duplicate detection, source provenance, missing vs zero.
+- [ ] Per-role performance reporting; no opaque universal score.
 
-## P5 — Attendance / action center
-- [ ] Before/During/After roster capture and multi-page completeness check.
-- [ ] Attendance inference distinct from confirmed event participation.
-- [ ] Reasons, comments, officer ownership and escalation cases.
-- [ ] Per-member history, case activity/audit, handover queue.
-- [ ] Authorization tests preventing private explanations in member/public reporting.
+## P5 — Team/Party Planner (future, after core workflows)
+- [ ] Confirm event-specific team capacities, healer/role requirements and guild policies.
+- [ ] Manual assignments, duplicates/conflicts, locked teams, shareable layout.
+- [ ] Suggestion-only auto-fill; never infer attendance from assignments.
 
-## P6 — Integrations and hardening
-- [ ] Private Drive integration: OAuth, upload and authorized read.
-- [ ] Google Sheets export and preview/validate/diff/approve import.
-- [ ] Automated post-review OCR quality benchmark and Unicode coverage.
-- [ ] Encrypted external DB backups and restore drill.
-- [ ] Security review, performance and deployment smoke tests.
+## P6 — Integrations, hosting and hardening
+- [ ] Private Google Drive OAuth and screenshot evidence storage.
+- [ ] Google Sheets approved export and diff/validate/approve import.
+- [ ] Benchmark local OpenCV/Tesseract OCR accuracy on real labeled samples; PaddleOCR optional.
+- [ ] Encrypted offsite PostgreSQL backups + tested restore.
+
+### VPS pre-deployment gate — do not skip
+- [ ] Verify a recent restorable backup, SSH and OVH console access.
+- [ ] Check existing Docker/Zulip, Nginx/PM2, IPv4+IPv6 firewall, ports and restart policies.
+- [ ] Verify actual guest CPU/RAM/disk/filesystem after any approved upgrade reboot; do not assume panel values equal OS values.
+- [ ] Confirm Zulip and other apps are healthy and resource headroom is adequate.
+- [ ] Deploy separate app Compose/network/volumes/DB, HTTPS, smoke tests, rollback strategy.
+- [ ] No Aeternum deploy or live reboot without explicit operational authorization.
+
+### Deferred — do not implement without a new decision
+- Guild Auction / loot bidding.
+- Polarity Zone planning.
+- Cross-role universal performance scoring and paid AI OCR by default.
 
 ## Definition of Done
 
-A feature is done only with UI/API behavior, migration (if needed), server validation, authorized access, source provenance, duplicate/missing-data handling, tests and documentation updates. Mark blocked steps honestly.
+For backend-connected features, a feature is done only with UI/API behavior, migration (if needed), server validation, authorized access, source provenance, duplicate/missing-data handling, tests and documentation updates. Mark blocked steps honestly.
