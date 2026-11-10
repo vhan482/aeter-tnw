@@ -59,3 +59,20 @@ curl http://127.0.0.1:3001/api/ready
 ## Next implementation slice
 
 Define local account sessions and role permissions, then wire the roster and weekly Gear Rating API. Do **not** translate guild roster's unverified `Rating` into GR.
+
+## Officer-only local authentication (in development)
+
+The first Guild Leader account must be created from an interactive local terminal **after migrations**:
+
+```bash
+yarn db:migrate
+yarn workspace @aeter/api bootstrap:leader guildleader
+```
+
+The bootstrap prompts for a password **without echoing it**. No passwords should be passed as CLI arguments, committed, or stored in shell history. First-account bootstrap refuses to run once any officer exists.
+
+Open `http://127.0.0.1:5173` after starting web/API. Sign in as the bootstrapped Leader. Use **Manage officers** to add approved Officers or Clerks with temporary 12+ character passwords; they must change passwords at first sign-in. The Leader can reset or disable accounts. No public sign-up or regular-member login is available.
+
+`APP_ORIGIN` in `apps/api/.env` must exactly equal the browser origin. Auth mutations without the matching `Origin` header are rejected. In production `APP_ORIGIN` must be HTTPS; set `NODE_ENV=production` for secure cookies behind a correctly configured HTTPS reverse proxy. No server secrets are sent to the browser.
+
+**MVP limitation:** This wraps the existing browser-only frontend in officer authentication. The localStorage/IndexedDB data has **not yet moved into PostgreSQL** and remains present in the local browser even after signing out. Do not use shared devices or treat this phase as production-ready authorization for guild records. Secure server-backed CRUD and controlled import will follow.

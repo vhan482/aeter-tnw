@@ -3,10 +3,8 @@ on:
   push:
     branches: [main]
   pull_request:
-
 permissions:
   contents: read
-
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -17,8 +15,7 @@ jobs:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci_only_for_tests
           POSTGRES_DB: aeter_ci
-        ports:
-          - 55432:5432
+        ports: [55432:5432]
         options: >-
           --health-cmd "pg_isready -U ci -d aeter_ci"
           --health-interval 10s
@@ -30,23 +27,45 @@ jobs:
         with:
           node-version: '22'
       - run: corepack enable
-      - run: yarn install --immutable
-      - run: yarn typecheck
-      - run: yarn test
-      - run: yarn build
-      - name: Verify tracked Drizzle migrations against PostgreSQL 17
-        run: yarn workspace @aeter/api db:migrate
+      - name: Temporary auth bootstrap install
+        run: yarn install
+        env:
+          YARN_ENABLE_IMMUTABLE_INSTALLS: 'false'
+          YARN_ENABLE_HARDENED_MODE: '0'
+      - name: Export updated Yarn lock
+        run: |
+          echo 'BEGIN_AETER_AUTH_LOCK'
+          base64 -w0 yarn.lock
+          echo
+          echo 'END_AETER_AUTH_LOCK'
+      - name: Generate auth migration
+        run: yarn workspace @aeter/api db:generate
         env:
           DATABASE_URL: postgresql://ci:ci_only_for_tests@127.0.0.1:55432/aeter_ci
-      - name: API health and database readiness smoke test
+      - name: Export generated migration files
+        shell: bash
+        run: |
+          find apps/api/drizzle -type f -print0 | sort -z | while IFS= read -r -d '' path; do
+            echo "BEGIN_AETER_AUTH_MIGRATION=$path"
+            base64 -w0 "$path"
+            echo
+            echo "END_AETER_AUTH_MIGRATION=$path"
+          done
+      - run: yarn typecheck
+      - run: yarn build
+      - run: yarn workspace @aeter/api db:migrate
+        env:
+          DATABASE_URL: postgresql://ci:ci_only_for_tests@127.0.0.1:55432/aeter_ci
+      - run: yarn test
+        env:
+          AUTH_TEST_DATABASE_URL: postgresql://ci:ci_only_for_tests@127.0.0.1:55432/aeter_ci
+      - name: Existing health/readiness smoke test
         shell: bash
         env:
           DATABASE_URL: postgresql://ci:ci_only_for_tests@127.0.0.1:55432/aeter_ci
-          HOST: 127.0.0.1
-          PORT: '3001'
         run: |
           yarn workspace @aeter/api start > /tmp/aeter-api.log 2>&1 &
-          api_pid=$!
-          trap 'kill "$api_pid" 2>/dev/null || true' EXIT
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
           curl --retry 20 --retry-delay 1 --retry-connrefused --fail --silent http://127.0.0.1:3001/api/health | grep -q '"status":"ok"'
           curl --fail --silent http://127.0.0.1:3001/api/ready | grep -q '"status":"ready"'

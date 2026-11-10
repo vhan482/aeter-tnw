@@ -33,6 +33,11 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 | D-026 | Agreed | Yarn 4 via Corepack (node-modules linker) | Consistent package manager for React + Express; commit yarn.lock after first online install |
 | D-027 | Agreed | Develop locally first; no VPS changes in foundation PR | Protect existing bastion/inspection services and allow isolated testing |
 
+| D-028 | Agreed | Management app has officer-only accounts; no public user registration | Guild Leader, Officer and Clerk can sign in; ordinary guild members have no dashboard account |
+| D-029 | Agreed | Guild Leader provisions/disables officer accounts | First leader via console bootstrap; no open signup; temporary passwords changed at first login |
+| D-030 | Proposed | Password login uses Argon2id + opaque PostgreSQL-backed HttpOnly sessions | Low-cost local auth with revocation; 12-hour absolute sessions, per-IP login limits and strict origin checks |
+| D-031 | Agreed | Prototype browser data must not be mistaken for shared/private server records | Login gate is UI access; migrate existing localStorage/IndexedDB data after authenticated CRUD and review exist |
+
 ## New decision template
 
 ```markdown

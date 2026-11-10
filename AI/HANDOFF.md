@@ -1,6 +1,6 @@
 # Agent Handoff / Current Project State
 
-**Last updated:** 2026-11-10 (Asia/Manila); Yarn/API foundation draft PR #1.
+**Last updated:** 2026-11-10 (Asia/Manila); officer-only auth development branch.
 
 ## Verified / discussed
 
@@ -11,11 +11,11 @@
 - Six core planned modules: Members/weekly GR, Mirror World, Guild League, Guild Siege, 3-checkpoint Attendance, Member Action Center.
 - Future Team Planner: accepted direction from the reference UI review, **not a current MVP implementation**. Auctions and Polarity Zone **deferred**.
 - Suggested delivery sequence: local foundation → weekly roster/GR → Attendance/Action Center → performance OCR/analytics → future Team Planner.
-- Hosting preference changed to the Bastion/Inspector utility VPS (prior inventory: Debian 13, 1 vCPU / ~2GB / 20GB); SSH jump/inspection role requires review before web hosting. Zulip is **not** the deployment candidate. Draft PR #1 adds local-only Express health/readiness, PostgreSQL Compose, initial Drizzle schema/migration and Yarn 4 lockfile; **no production deployment**. Existing browser UI is still disconnected from the backend.
+- Hosting preference changed to the Bastion/Inspector utility VPS (prior inventory: Debian 13, 1 vCPU / ~2GB / 20GB); SSH jump/inspection role requires review before web hosting. Zulip is **not** the deployment candidate. PR #1 was merged on 2026-11-10 and added local-only Express health/readiness, PostgreSQL Compose, initial Drizzle schema/migration and Yarn 4 lockfile; **no production deployment**. Existing browser UI is still disconnected from the backend.
 
 ## Immediate next actions
 
-1. Review draft PR #1, CI checks and lockfile/migration changes; preserve existing React prototype behavior.
+1. Review officer-only auth PR, generated Yarn lock/migration, CI tests and server-side authorization behavior; do not merge if any check fails.
 2. Confirm guild roster `Rating` vs GR, weekly reset, and permissions for officer notes.
 3. Complete local auth, then connect roster CRUD with the isolated PostgreSQL API; migrate prototype browser data carefully after backup.
 4. Implement roster/weekly snapshots and evidence-review flow.
@@ -42,3 +42,10 @@
 - Known risks:
 - Next action:
 ```
+
+## Officer-only access decision (2026-11-10)
+
+- Authorized management roles: Guild Leader, Officer and explicitly approved Clerk; no ordinary member login and no public sign-up.
+- First Leader account created in a local terminal; Leader manages new accounts. Use Argon2id hashes, opaque DB sessions and strict origin checking.
+- The current React screens still read browser localStorage/IndexedDB; the new sign-in gate does **not** migrate, encrypt or share this pre-existing data. Do not deploy this browser prototype for sensitive multi-user operations before the server data migration.
+- No changes to bastion/utility VPS or Zulip. Hosting remains pending security review.
