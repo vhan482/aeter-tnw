@@ -1,0 +1,54 @@
+.roster-shell{min-height:100vh;background:#0b111c;color:#e8edf5;display:flex;font-family:Inter,system-ui,-apple-system,sans-serif}
+.roster-sidebar{width:242px;background:#111b2a;border-right:1px solid #26374c;min-height:100vh;flex-shrink:0;display:flex;flex-direction:column;padding:25px 14px;gap:6px}
+.roster-brand{display:flex;align-items:center;gap:12px;padding:0 10px 38px}.roster-brand strong{letter-spacing:2px;font-size:17px}.roster-brand small{display:block;color:#8da1b9;font-size:11px;margin-top:3px}
+.roster-mark{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#c3a576,#7a5264);font-size:24px;color:#131722}
+.roster-section-label{font-size:10px;letter-spacing:2px;color:#788da9;padding:0 12px 12px}
+.roster-nav-active,.roster-nav-muted{padding:12px 13px;display:flex;gap:12px;align-items:center;font-size:13px;border-radius:10px}
+.roster-nav-active{background:#233653;color:#ebf3ff;font-weight:700;border-left:3px solid #c2a774}.roster-nav-muted{color:#7f91a8}
+.roster-side-foot{margin-top:auto;border-top:1px solid #2d3c50;padding:19px 7px 8px;display:grid;gap:9px}
+.roster-signed{display:grid;gap:4px;margin-bottom:6px}.roster-signed small{font-size:10px;letter-spacing:1.5px;color:#94a4b9}
+.roster-signed strong{font-size:13px}.roster-signed span{font-size:11px;color:#9eb0c5;overflow-wrap:anywhere}
+.roster-side-foot button{background:#1b2b40;color:#e4ecf7;border:1px solid #35475f;border-radius:8px;padding:9px;cursor:pointer;text-align:left}
+.roster-main{width:calc(100% - 242px);padding:32px 36px;max-width:1700px;margin:0 auto}
+.roster-top{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:27px}.roster-eyebrow{letter-spacing:2px;color:#bda479;font-size:10px;font-weight:700}
+.roster-top h1{font-size:30px;margin:8px 0;font-weight:700}.roster-top p{color:#98abc4;font-size:13px;margin:0}
+.roster-server-pill{border:1px solid #305d51;border-radius:50px;color:#8fe1b3;background:#152c2c;padding:8px 13px;font-size:11px}
+.roster-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 23px}
+.roster-kpis>div{background:#142033;border:1px solid #2b3c52;border-radius:12px;display:flex;flex-direction:column;gap:7px;padding:19px}
+.roster-kpis small{font-size:12px;color:#9bb0ca}.roster-kpis strong{font-size:30px}.roster-kpis span{font-size:11px;color:#7590ac}
+.roster-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(310px,1fr);gap:17px;align-items:start}
+.roster-card{background:#152134;border:1px solid #2c3c53;border-radius:13px;padding:20px;min-width:0}
+.roster-card-title{display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.roster-card-title h2{margin:0;font-size:18px}.roster-card-title p{font-size:12px;color:#8fa5be;margin:6px 0 0;line-height:1.6}
+.roster-card button,.roster-import-modal button{cursor:pointer;border-radius:8px;border:1px solid #45617e;background:#253752;color:#dce8fa;padding:8px 12px;white-space:normal}
+.roster-card button:disabled,.roster-import-modal button:disabled{opacity:.5;cursor:not-allowed}
+.roster-card .roster-primary,.roster-import-modal .roster-primary{color:#162136;background:#c9ad7d;border-color:#c9ad7d;font-weight:700}
+.roster-search input{width:100%;background:#0f192a;border:1px solid #34475e;color:#f4f6fb;border-radius:9px;padding:11px;margin-bottom:16px}
+.roster-table-wrap{max-height:650px;overflow:auto}.roster-table-wrap table,.roster-preview-list table{border-collapse:collapse;width:100%;font-size:12px}
+.roster-table-wrap th,.roster-table-wrap td,.roster-preview-list th,.roster-preview-list td{padding:12px 10px;text-align:left;border-bottom:1px solid #2a394c}
+.roster-table-wrap th,.roster-preview-list th{font-weight:600;color:#93a8c0;position:sticky;top:0;background:#152134}
+.roster-table-wrap td strong{font-size:12px}.roster-table-wrap td small{display:block;font-size:10px;color:#7990ae;margin-top:5px}
+.roster-highlight{background:#233750}.roster-status{font-size:11px;color:#a7d9c4}
+.roster-empty,.roster-note{font-size:12px;color:#8ea3be;padding:12px}
+.roster-import-trigger{margin-top:14px;border-top:1px solid #354258;padding-top:10px;font-size:12px;color:#9eb0c5}
+.roster-form{display:grid;gap:13px}.roster-field{display:grid;gap:6px;color:#aabbd0;font-size:12px}
+.roster-field input,.roster-field select,.roster-field textarea{width:100%;min-width:0;border:1px solid #3d536c;background:#0e1a2d;color:#f0f5ff;border-radius:8px;padding:10px;font-family:inherit}
+.roster-field textarea{min-height:75px}.roster-field input:disabled{color:#91a2b5}
+.roster-profile-facts{display:grid;gap:10px;font-size:12px;color:#91a7c0;border-bottom:1px solid #39475b;padding-bottom:20px}
+.roster-profile-facts b{color:#d7e6fa}.roster-subsection{padding:18px 0 8px}
+.roster-subsection h3,.roster-snapshots h3{margin:0 0 8px;font-size:14px}.roster-subsection p{font-size:12px;color:#8da5c0;line-height:1.6}
+.roster-check{display:flex;gap:9px;align-items:flex-start;color:#bfd0e4;font-size:12px;line-height:1.5}
+.roster-check input{margin-top:2px;accent-color:#d2b581}
+.roster-snapshots{padding-top:22px}.roster-snapshot{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #2c3b50}
+.roster-snapshot div{display:grid;gap:5px;font-size:12px}.roster-snapshot span{font-size:17px;font-weight:700;color:#f2dfb4}.roster-snapshot small{color:#8da3bf;font-size:10px;overflow-wrap:anywhere}
+.roster-row-actions{display:flex;gap:9px;flex-wrap:wrap}
+.roster-empty-details{text-align:center;color:#8ca3bc;padding:65px 15px}.roster-empty-details div{font-size:38px;color:#c1a474}.roster-empty-details h2{color:#e6eff8;font-size:18px}
+.roster-error,.roster-success{border-radius:10px;padding:12px 15px;margin-bottom:18px;font-size:12px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.roster-error{background:#431e2a;color:#ffd1d6;border:1px solid #9e4457}.roster-success{background:#16362f;color:#b9edcf;border:1px solid #327361}
+.roster-error button,.roster-success button{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer}
+.roster-import-overlay{position:fixed;z-index:2100;inset:0;background:#070b13df;padding:15px;display:grid;place-items:center}
+.roster-import-modal{width:min(880px,100%);max-height:90vh;overflow:auto;background:#152134;color:#eaf1fb;border:1px solid #576781;border-radius:16px;padding:22px}
+.roster-import-modal p{font-size:12px;color:#b5c5d8;line-height:1.7}
+.roster-preview-list{max-height:340px;overflow:auto;margin:18px 0;border:1px solid #344961;border-radius:10px}
+@media(max-width:1100px){.roster-layout{grid-template-columns:1fr}}
+@media(max-width:740px){.roster-shell{display:block}.roster-sidebar{width:auto;min-height:0;display:block}.roster-brand{padding-bottom:15px}.roster-nav-muted,.roster-section-label{display:none}.roster-side-foot{margin-top:12px}.roster-main{width:100%;padding:20px}.roster-kpis{grid-template-columns:1fr}.roster-card{padding:15px}}
