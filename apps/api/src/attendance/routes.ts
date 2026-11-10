@@ -4,7 +4,7 @@ import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { z } from 'zod';
 import { attendanceEvents, attendanceCheckpoints, attendanceObservations,
-  attendanceObservationCorrections, attendanceAssessments, attendanceAssessmentHistory, members } from '../db/schema.js';
+  attendanceObservationCorrections, attendanceAssessments, attendanceAssessmentHistory, attendanceEvidence, members } from '../db/schema.js';
 import { actor, conflict, handleConstraint, invalid, noStore, notFound, reviewerOnly, wrap, type Guards } from '../ops/common.js';
 
 const uuid=z.string().uuid();
@@ -17,9 +17,11 @@ const eventBody=z.object({
 const checkpointBody=z.object({
   phase:z.enum(['BEFORE','DURING','AFTER']),
   capturedAt:instant,
-  evidenceRef:z.string().trim().min(3).max(255),
+  evidenceRef:z.string().trim().max(255).default(''),
+  evidenceUploadId:uuid.nullable().default(null),
   coverage:z.enum(['COMPLETE','PARTIAL','UNKNOWN'])
-}).strict();
+}).strict().refine(p=>!!p.evidenceUploadId || p.evidenceRef.length>=3,
+  {path:['evidenceRef'],message:'Provide a screenshot file or reference'});
 const observationStatus=z.enum(['ONLINE','OFFLINE','UNKNOWN']);
 const observationBatch=z.object({
   reviewed:z.literal(true),
@@ -85,8 +87,15 @@ export function registerAttendanceRoutes(app:Express,pool:pg.Pool,guards:Guards)
     }).from(attendanceObservations).innerJoin(members,eq(attendanceObservations.memberId,members.id))
       .where(inArray(attendanceObservations.checkpointId,checkpoints.map(c=>c.id)))
       .orderBy(asc(members.characterName)):[];
+    const uploadIds=checkpoints.flatMap(c=>c.evidenceUploadId?[c.evidenceUploadId]:[]);
+    const uploaded=uploadIds.length?await db.select({
+      id:attendanceEvidence.id,originalName:attendanceEvidence.originalName,
+      expiresAt:attendanceEvidence.expiresAt,deletedAt:attendanceEvidence.deletedAt
+    }).from(attendanceEvidence).where(inArray(attendanceEvidence.id,uploadIds)):[];
+    const evidence=uploaded.map(r=>({id:r.id,originalName:r.originalName,
+      expiresAt:r.expiresAt,status:r.deletedAt||r.expiresAt.getTime()<=Date.now()?'EXPIRED':'AVAILABLE'}));
     // No officer assessments/notes are returned from this shared clerk view.
-    res.json({event,checkpoints,observations});
+    res.json({event,checkpoints,observations,evidence});
   }));
 
   app.post(root+'/events/:id/checkpoints',guards.csrf,wrap(async(req,res)=>{
@@ -94,10 +103,21 @@ export function registerAttendanceRoutes(app:Express,pool:pg.Pool,guards:Guards)
     if(!id.success||!parsed.success){invalid(res);return;}
     const exists=await db.select({id:attendanceEvents.id}).from(attendanceEvents).where(eq(attendanceEvents.id,id.data)).limit(1);
     if(!exists.length){notFound(res);return;}
+    let uploaded:typeof attendanceEvidence.$inferSelect|undefined;
+    if(parsed.data.evidenceUploadId){
+      const [found]=await db.select().from(attendanceEvidence)
+        .where(eq(attendanceEvidence.id,parsed.data.evidenceUploadId)).limit(1);
+      if(!found||found.deletedAt||found.expiresAt.getTime()<=Date.now()){
+        res.status(422).json({error:'Screenshot has expired or does not exist'});return;
+      }
+      uploaded=found;
+    }
     try{
       const [checkpoint]=await db.insert(attendanceCheckpoints).values({
         eventId:id.data,phase:parsed.data.phase,capturedAt:new Date(parsed.data.capturedAt),
-        evidenceRef:parsed.data.evidenceRef,coverage:parsed.data.coverage,createdBy:actor(res).id
+        evidenceRef:uploaded?.originalName||parsed.data.evidenceRef,
+        evidenceUploadId:uploaded?.id??null,
+        coverage:parsed.data.coverage,createdBy:actor(res).id
       }).returning();
       res.status(201).json({checkpoint});
     }catch(error){if(!handleConstraint(error,res))throw error;}
