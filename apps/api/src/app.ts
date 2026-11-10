@@ -7,6 +7,9 @@ import type { ApiConfig } from './config.js';
 export function createApp(pool: pg.Pool, config: ApiConfig) {
   const app = express();
   app.disable('x-powered-by');
+  // Only trust forwarding headers supplied by a loopback reverse proxy.
+  // Never use unconditional trust proxy on public interfaces.
+  app.set('trust proxy', 'loopback');
   app.use(helmet());
   app.use(express.json({ limit: '32kb' }));
 

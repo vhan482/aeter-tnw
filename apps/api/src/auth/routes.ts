@@ -130,7 +130,7 @@ export function registerAuthRoutes(app: Express, pool: pg.Pool, config: ApiConfi
     next();
   };
 
-  app.use('/api/auth', (_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
+  app.use(['/api/auth', '/api/officers'], (_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
 
   app.post('/api/auth/login', csrf, loginLimiter, handler(async (req, res) => {
     const parsed = credentials.safeParse(req.body);
