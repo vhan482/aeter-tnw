@@ -89,7 +89,8 @@ export function registerAuthRoutes(app: Express, pool: pg.Pool, config: ApiConfi
     res.cookie(COOKIE, token, cookieSettings(config));
   }
 
-  const requireOfficer = handler(async (req, res) => {
+  const authenticate = (req: Request, res: Response, next: NextFunction) => {
+    void (async () => {
     const token = readToken(req);
     if (!token) {
       res.status(401).json({ error: 'Sign in required' });
@@ -112,15 +113,7 @@ export function registerAuthRoutes(app: Express, pool: pg.Pool, config: ApiConfi
       return;
     }
     res.locals.officer = found as Officer;
-  });
-
-  // Express 4 middleware must call next on success.
-  const authenticate = (req: Request, res: Response, next: NextFunction) => {
-    requireOfficer(req, res, (err?: unknown) => {
-      if (err) { next(err); return; }
-      if (res.headersSent) return;
-      next();
-    });
+    })().then(() => { if (!res.headersSent) next(); }).catch(next);
   };
   const ready = (_req: Request, res: Response, next: NextFunction) => {
     if (officerFrom(res).mustChangePassword) {

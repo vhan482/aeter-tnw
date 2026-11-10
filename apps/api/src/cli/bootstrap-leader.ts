@@ -1,7 +1,7 @@
 import 'dotenv/config';
-import { createHash } from 'node:crypto';
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
+import { sql } from 'drizzle-orm';
 import { officerAccounts, officerAudit } from '../db/schema.js';
 import { loadConfig } from '../config.js';
 import { hashPassword, PASSWORD_MIN } from '../auth/password.js';
@@ -54,9 +54,9 @@ async function main() {
       throw new Error('Password mismatch or outside 12–128 character policy');
     }
     const hash = await hashPassword(password);
-    const account = await db.transaction(async tx => {
+    await db.transaction(async tx => {
       // Serialized first-owner bootstrap against other concurrent bootstrap shells.
-      await tx.execute('SELECT pg_advisory_xact_lock(832175, 9101)');
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(832175, 9101)`);
       const existingUnderLock = await tx.select({ id: officerAccounts.id }).from(officerAccounts).limit(1);
       if (existingUnderLock.length) throw new Error('Officer accounts already exist');
       const created = await tx.insert(officerAccounts).values({
@@ -66,10 +66,9 @@ async function main() {
       await tx.insert(officerAudit).values({
         actorId: created[0].id, targetId: created[0].id, action: 'INITIAL_LEADER_BOOTSTRAP'
       });
-      return created[0];
     });
     // Never log the password or hash.
-    console.log(`Guild Leader account ${username} created (${createHash('sha256').update(account.id).digest('hex').slice(0, 8)}).`);
+    console.log(`Guild Leader account ${username} created. Keep the password private.`);
   } finally {
     await pool.end();
   }
