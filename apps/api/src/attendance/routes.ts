@@ -22,7 +22,7 @@ const checkpointBody=z.object({
 }).strict();
 const observationStatus=z.enum(['ONLINE','OFFLINE','UNKNOWN']);
 const observationBatch=z.object({
-  reviewed:true===true ? z.literal(true) : z.literal(true),
+  reviewed:z.literal(true),
   observations:z.array(z.object({memberId:uuid,status:observationStatus}).strict()).min(1).max(250)
 }).strict();
 const observationCorrection=z.object({

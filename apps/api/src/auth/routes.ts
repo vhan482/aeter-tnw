@@ -9,6 +9,8 @@ import { officerAccounts, officerSessions, officerAudit } from '../db/schema.js'
 import type { ApiConfig } from '../config.js';
 import { hashPassword, verifyPassword, PASSWORD_MIN } from './password.js';
 import { registerRosterRoutes } from '../roster/routes.js';
+import { registerAttendanceRoutes } from '../attendance/routes.js';
+import { registerActionCenterRoutes } from '../actions/routes.js';
 
 type Role = 'GUILD_LEADER' | 'OFFICER' | 'CLERK';
 type Officer = {
@@ -248,6 +250,8 @@ export function registerAuthRoutes(app: Express, pool: pg.Pool, config: ApiConfi
   }));
 
   registerRosterRoutes(app, pool, { authenticate, ready, csrf });
+  registerAttendanceRoutes(app, pool, { authenticate, ready, csrf });
+  registerActionCenterRoutes(app, pool, { authenticate, ready, csrf });
 
   // Keep every future management route behind authentication, even if unimplemented.
   app.use('/api/management', authenticate, ready, (_req, res) =>
