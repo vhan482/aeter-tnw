@@ -1,0 +1,38 @@
+# TEMPORARY feature-branch-only workflow to generate reproducible Yarn lock entries.
+# Remove this workflow from the PR after the lockfile has been committed.
+name: OCR feature branch lockfile bootstrap
+on:
+  push:
+    branches: [feat/mirror-selfhosted-tesseract]
+    paths:
+      - .github/workflows/ocr-lock-bootstrap.yml
+permissions:
+  contents: write
+concurrency:
+  group: aeter-ocr-lockfile-bootstrap
+  cancel-in-progress: true
+jobs:
+  update-lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: corepack enable
+      - name: Resolve and pin new OCR packages only
+        run: yarn install --mode=update-lockfile
+      - name: Commit only yarn.lock to feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git branch --show-current)" = "feat/mirror-selfhosted-tesseract"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- yarn.lock
+          if ! git diff --cached --quiet; then
+            git commit -m "build(ocr): lock Tesseract.js v7 and English traineddata"
+            git push origin HEAD:refs/heads/feat/mirror-selfhosted-tesseract
+          fi
