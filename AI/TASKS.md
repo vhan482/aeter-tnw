@@ -34,6 +34,11 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Enforce missing/unverified GR as NULL, not a copied or assumed value.
 
 ## P3 — Attendance / Member Action Center
+
+**PR #4 merged; code exists but production/role-based browser acceptance is still unverified.** The older unchecked checklist items below require runtime confirmation before being marked complete.
+- [ ] Check deployed commit and 0003 migration, private directory, Multer limits/content signatures, 401/403/410 file behavior and hourly systemd cleanup timer. No unapproved bastion changes.
+- [ ] Run officer/clerk browser acceptance, verify confidential reasons/assessments are role-restricted and no availability signal is interpreted as participation.
+
 - [ ] Phase 3 PR: BEFORE / DURING / AFTER checkpoint references and explicit reviewed ONLINE/OFFLINE/UNKNOWN observations; migration/tests pending.
 - [ ] Phase 3: multiple screenshot references per phase, coverage labels; unknown ≠ offline and online ≠ participation.
 - [ ] Add 7-day local image retention with private authenticated viewing, size/format limits, content signature validation, hourly cleanup timer and expiry state.
@@ -60,6 +65,17 @@ Use this as a working checklist; update checkboxes only after tests/verification
 - [ ] Confirm event-specific team capacities, healer/role requirements and guild policies.
 - [ ] Manual assignments, duplicates/conflicts, locked teams, shareable layout.
 - [ ] Suggestion-only auto-fill; never infer attendance from assignments.
+
+## RONW Guild Tool reference review — November 11, 2026
+
+- [x] Map user-provided screenshots to observed modules and classify future/proposed/deferred features in North Star Section 3.10; **no code or third-party assets added**.
+- [ ] Verify official/current TNW team-size/arena/lane rules (League Main/Sub, Siege, Mirror World) and guild-approved class/role requirements.
+- [ ] Draft event-specific team planning contracts with leader slot, roles, locks, reserve, availability/LOA conflicts, revisions and publish state.
+- [ ] Implement manual, touch/keyboard-accessible assignments before suggestion-only auto-fill; human review/undo required.
+- [ ] Specify preview/approve plus versioned provenance when copying League squads to Siege.
+- [ ] Scope tactical-map editor independently: original/licensed art, step sequencing, normalized marker positions and audit.
+- [ ] Plan sanitized print/view outputs; any Discord integration needs server-held webhook, opt-in destination, constrained mentions, idempotency and time-zone validation.
+- [ ] Keep Auction and Polarity deferred and prevent public copy of any user-shared view code or identifiable details.
 
 ## P6 — Integrations, hosting and hardening
 - [ ] Private Google Drive OAuth and screenshot evidence storage.
