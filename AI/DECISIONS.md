@@ -54,6 +54,15 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 
 | D-043 | Agreed future | Introduce a centralized class-icon/color registry for Aeternum | User-supplied reference shows 38 job labels and downloadable WebP artwork; use consistent visual families across roster/attendance/GR/league/siege/team plans, but verify actual class names and redistribution rights before committing assets; class does not determine combat role |
 
+| D-044 | Agreed future | Reuse a single canonical roster in event-specific team plans | League/Siege composition is useful; exact game capacities/lanes still require verification |
+| D-045 | Proposed future | Build separate versioned multi-step tactical maps after basic team planning | Use original/licensed map art, normalized positions, team markers and annotations |
+| D-046 | Agreed principle | Reported LOA does not prove absence or automatically remove a member from an approved lineup | Flag conflicts; officer approves an audited substitution; attendance evidence stays independent |
+| D-047 | Proposed later | Discord publishing/reminders via server-held webhook, approved destinations and verified event clocks | Do not leak webhook/mention secrets to browsers or auto-post without explicit approval |
+| D-048 | Agreed | Maintain officer-only accounts; external read-only guild viewing is a separate future security proposal | The screenshot reference's view-code pattern is not implemented or approved for Aeternum |
+| D-049 | Agreed | Reference screenshots' team counts and feature claims are observations, not game-rule proof | 12+18 League teams, 30 Siege/Mirror World parties, 250 Polarity slots need independent confirmation |
+| D-050 | Proposed | Copy-preview-approve for lineup reuse across League/Siege | Snapshot provenance, independent revision history, no silent source-to-destination sync |
+| D-051 | Proposed | Durable role-filtered audits and sanitized printable/shared plans | Don't import the reference's stated 500-entry cap or reveal private cases/LOA/evidence links |
+
 ## New decision template
 
 ```markdown
