@@ -12,6 +12,7 @@ import { registerRosterRoutes } from '../roster/routes.js';
 import { registerAttendanceRoutes } from '../attendance/routes.js';
 import { registerActionCenterRoutes } from '../actions/routes.js';
 import { registerEvidenceRoutes } from '../evidence/routes.js';
+import { registerMirrorWorldRoutes } from '../mirror/routes.js';
 
 type Role = 'GUILD_LEADER' | 'OFFICER' | 'CLERK';
 type Officer = {
@@ -253,6 +254,7 @@ export function registerAuthRoutes(app: Express, pool: pg.Pool, config: ApiConfi
   registerRosterRoutes(app, pool, { authenticate, ready, csrf });
   registerAttendanceRoutes(app, pool, { authenticate, ready, csrf });
   registerEvidenceRoutes(app, pool, { authenticate, ready, csrf }, config);
+  registerMirrorWorldRoutes(app, pool, { authenticate, ready, csrf });
   registerActionCenterRoutes(app, pool, { authenticate, ready, csrf });
 
   // Keep every future management route behind authentication, even if unimplemented.
