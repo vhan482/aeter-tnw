@@ -121,3 +121,16 @@ For backend-connected features, a feature is done only with UI/API behavior, mig
 - [ ] Integrate self-hosted Tesseract.js WASM/language assets for broad browser support only after bundle-size/privacy/accuracy evaluation; do not silently pull runtime code or image data from third-party CDNs.
 - [ ] Browser acceptance: native detection availability, preview, manual text fallback, alias collisions, no implicit member selection on ambiguous OCR, one-upload batch save.
 - [ ] Production remains unchanged. Do not activate this branch before required Phase 3 screenshot storage/migration/timer and Mirror World migration.
+
+## Mirror World self-hosted OCR milestone — feature branch
+
+- [x] Verify PR #6 merged.
+- [x] Add Tesseract.js worker/core/English model via pinned npm packages, only same-origin static serving and no runtime CDN.
+- [x] Add bounded in-browser Canvas preparation, grayscale/contrast option, OCR progress and lazy worker teardown.
+- [x] Retain native device OCR and manual text fallback; output is candidate text only.
+- [x] Add production-build guard verifying OCR language, worker and WASM files are present.
+- [ ] CI: resolve pinned Yarn lockfile, verify immutable install, typecheck, build, integration tests, OCR asset copy and final PR review.
+- [ ] Browser acceptance across Chrome/Opera/Firefox/Safari/mobile as available; inspect CSP/worker loading and verify no outbound OCR resource requests.
+- [ ] Benchmark real Ragnarok: The New World screenshots: row extraction accuracy, names including non-Latin, suffix parsing, rank gaps, highlights and scroll offsets. Tune templates/cropping before enabling bulk production use.
+- [ ] Optionally self-host additional language models after measured demand and package footprint review.
+- [ ] Keep production host untouched until separately approved staged Phase 3 and Mirror World deployment.
