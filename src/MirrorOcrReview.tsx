@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { matchRosterIdentity, parseMirrorLeaderboardText,
   readScreenshotWithNativeOcr, type RosterIdentity } from './lib/mirror-ocr';
 import { uploadMirrorEvidence } from './lib/mirror-evidence';
+import { readMirrorScreenshotWithTesseract, verifyMirrorScreenshot } from './lib/tesseract-reader';
 
 type SavedRow={memberId:string;rank:number|null};
 type ProposedRow={
@@ -27,6 +28,8 @@ export function MirrorOcrReview({sessionId,existing,onExpired,onSaved}:Props){
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
   const [notice,setNotice]=useState('');
+  const [progress,setProgress]=useState<number|null>(null);
+  const [enhance,setEnhance]=useState(true);
 
   useEffect(()=>{
     let active=true;
@@ -72,16 +75,19 @@ export function MirrorOcrReview({sessionId,existing,onExpired,onSaved}:Props){
     setAck(false);
   }
 
-  async function recognize(){
+  async function recognize(engine:'tesseract'|'native'='tesseract'){
     if(!file){setError('Choose an in-game screenshot first');return;}
-    setBusy(true);setError('');setNotice('');
+    setBusy(true);setProgress(0);setError('');setNotice('');
     try{
-      const output=await readScreenshotWithNativeOcr(file);
-      if(!output.trim())throw new Error('No readable text found. Use a clearer screenshot or paste extracted text.');
-      setRawText(output);setRows([]);setAck(false);
-      setNotice('Device OCR returned candidate text. Inspect it and select Parse text; do not treat it as verified.');
+      const result=engine==='tesseract'
+        ? await readMirrorScreenshotWithTesseract(file,{enhanceContrast:enhance,onProgress:setProgress})
+        : {text:await readScreenshotWithNativeOcr(file),confidence:null,width:0,height:0};
+      if(!result.text.trim())throw new Error('No readable text found. Try enhanced contrast, a new screenshot or manual entry.');
+      setRawText(result.text);setRows([]);setAck(false);
+      const score=result.confidence===null?'':` (OCR engine confidence ${result.confidence}%, not verification)`;
+      setNotice('Local screenshot OCR produced candidate text'+score+'. Review every field before saving.');
     }catch(e){setError(message(e));}
-    finally{setBusy(false);}
+    finally{setBusy(false);setProgress(null);}
   }
 
   function parseText(){
@@ -128,7 +134,7 @@ export function MirrorOcrReview({sessionId,existing,onExpired,onSaved}:Props){
   return <section className="roster-card mirror-ocr">
     <header className="mirror-ocr-header"><div>
       <h2>Screenshot reader & batch review</h2>
-      <p className="roster-note">Experimental on-device detection where your browser supports it. No automatic database writes. Unsupported browsers can paste text produced by a trusted local OCR tool.</p>
+      <p className="roster-note">Runs self-hosted Tesseract OCR in your browser (English model). The screenshot is not uploaded for recognition; nothing is saved without your approval. Mixed-language names may require manual corrections.</p>
     </div><span className="mirror-ocr-label">HUMAN REVIEW REQUIRED</span></header>
     {error&&<p role="alert" className="phase-error">{error}</p>}
     {notice&&<p role="status" className="phase-success">{notice}</p>}
@@ -137,13 +143,27 @@ export function MirrorOcrReview({sessionId,existing,onExpired,onSaved}:Props){
         <label>In-game leaderboard screenshot (PNG/JPEG/WebP, up to 5 MB)
           <input type="file" accept="image/png,image/jpeg,image/webp"
             onChange={e=>{
-              setFile(e.target.files?.[0]??null);setRows([]);setAck(false);setError('');setNotice('');
+              const chosen=e.target.files?.[0]??null;
+              try{if(chosen)verifyMirrorScreenshot(chosen);setFile(chosen);setError('');}
+              catch(err){setFile(null);setError(message(err));}
+              setRows([]);setRawText('');setAck(false);setNotice('');
             }}/></label>
         {imageUrl&&<img className="mirror-ocr-preview" src={imageUrl} alt="Local selected Mirror World ranking screenshot" />}
-        <button type="button" disabled={!file||busy} onClick={()=>void recognize()}>
-          {busy?'Processing…':'Try on-device text recognition'}
+
+        <label className="mirror-ocr-option"><input type="checkbox" checked={enhance}
+          disabled={busy} onChange={e=>setEnhance(e.target.checked)}/>
+          Improve text contrast before OCR (try disabling if letters disappear)
+        </label>
+        <button type="button" disabled={!file||busy} onClick={()=>void recognize('tesseract')}>
+          {busy?'Recognizing locally…':'Read screenshot with Tesseract OCR'}
         </button>
-        <p className="roster-note">Only locally detected text is proposed here. The image is uploaded to private server storage only if you approve and save results.</p>
+        {busy&&<div role="status" aria-live="polite" className="mirror-ocr-progress">
+          {progress===null?'Preparing OCR…':`Reading screenshot locally · ${progress}%`}
+        </div>}
+        <button type="button" disabled={!file||busy} onClick={()=>void recognize('native')}>
+          Try native device OCR (optional fallback)
+        </button>
+        <p className="roster-note">Recognition stays in your browser with Aeternum-hosted OCR assets. The image is sent to private server storage only after you approve selected results.</p>
       </div>
       <div className="mirror-ocr-input">
         <label>Detected text (editable; paste local OCR output if needed)
