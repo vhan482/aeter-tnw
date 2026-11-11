@@ -1,6 +1,6 @@
 import type { Express } from 'express';
 import type pg from 'pg';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { z } from 'zod';
 import { leagueMatches, leaguePlayerTabResults, leaguePlayerTabHistory, members } from '../db/schema.js';
@@ -68,6 +68,61 @@ export function registerLeagueRoutes(app:Express,pool:pg.Pool,guards:Guards){
     }));
     res.json({match,observations:rows,players:mergeLeagueRows(rows),
       note:'Only Aeternum guild members with reviewed screenshot-tab rows are shown. Missing tabs do not imply zero or absence; DPS-tab damage is a total, not damage per second.'});
+  }));
+
+
+  /** Single screenshot-tab batch import. All accepted rows share one explicit
+   * match, battlefield, tab and source. Strict per-tab validation runs before
+   * any database work; a duplicate identity aborts the entire SQL insert.
+   */
+  app.post(base+'/matches/:id/tab-results/batch',guards.csrf,wrap(async(req,res)=>{
+    const id=uuid.safeParse(req.params.id);
+    const schema=z.object({
+      battlefield:z.enum(['MAIN','SUB']),
+      tab:z.enum(['DPS','SUPPORT','STRATEGY']),
+      sourceReference:z.string().trim().min(3).max(255),
+      evidenceUploadId:uuid.nullable().default(null),
+      reviewed:z.literal(true),
+      rows:z.array(z.object({
+        memberId:uuid,
+        metrics:z.record(z.union([z.string(),z.number(),z.null()])),
+        reviewed:z.literal(true)
+      }).strict()).min(1).max(50)
+    }).strict();
+    const body=schema.safeParse(req.body);
+    if(!id.success||!body.success){invalid(res);return;}
+    if(body.data.tab==='STRATEGY'&&body.data.battlefield!=='SUB'){
+      invalid(res);return;
+    }
+    const entries=body.data.rows.map(row=>leagueObservation.safeParse({
+      memberId:row.memberId,metrics:row.metrics,reviewed:row.reviewed,
+      battlefield:body.data.battlefield,tab:body.data.tab,
+      sourceReference:body.data.sourceReference,
+      evidenceUploadId:body.data.evidenceUploadId
+    }));
+    if(entries.some(entry=>!entry.success)){invalid(res);return;}
+    const memberIds=body.data.rows.map(row=>row.memberId);
+    if(new Set(memberIds).size!==memberIds.length){
+      res.status(409).json({error:'Duplicate member in this screenshot tab; review before saving'});
+      return;
+    }
+    const match=await findMatch(id.data);
+    if(!match){notFound(res);return;}
+    const found=await db.select({id:members.id}).from(members)
+      .where(inArray(members.id,memberIds));
+    if(found.length!==memberIds.length){
+      res.status(422).json({error:'One or more reviewed guild members do not exist'});
+      return;
+    }
+    try{
+      const inserted=await db.transaction(async tx=>tx.insert(leaguePlayerTabResults)
+        .values(entries.map(entry=>{
+          if(!entry.success)throw new Error('Unexpected invalid review entry');
+          const {reviewed,...value}=entry.data;
+          return {...value,matchId:id.data,reviewedBy:actor(res).id};
+        })).returning({id:leaguePlayerTabResults.id}));
+      res.status(201).json({created:inserted.length,ids:inserted.map(r=>r.id)});
+    }catch(error){if(!handleConstraint(error,res))throw error;}
   }));
 
   app.post(base+'/matches/:id/tab-results',guards.csrf,wrap(async(req,res)=>{

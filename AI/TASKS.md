@@ -159,3 +159,17 @@ For backend-connected features, a feature is done only with UI/API behavior, mig
 - [ ] Benchmark Guild League OCR templates (Main/Sub DPS/Support/Strategy) against real labeled screenshots before adding candidate batch importer.
 - [ ] Add opponent external identity strategy, team-wide kills/participants/objectives and phase/score nuances after validating game screenshots.
 - [ ] No production deployment without separately approved Phase 3 retention setup, additive migrations and backup/restore gate.
+
+## Guild League screenshot-to-review batch import (2026-11-12; development branch)
+
+- [x] Verify PR #9 merged (`f504cac`), preserve existing League match/tab review routes and authorizations.
+- [x] Reuse lazy self-hosted Tesseract OCR engine and same-origin English model; keep original screenshot local until officer confirmation.
+- [x] Add conservative four-metric-per-tab parser for Main/Sub DPS & Support, Sub-only Strategy; no auto screen/battlefield classification.
+- [x] Add UI for explicit battlefield/tab choice, local screenshot preview, original OCR text, matching aliases, per-cell correction, deselecting doubtful rows, single-source batch review.
+- [x] Add CSRF-protected atomic batch route and server-side unique identity/field validation; no partial import on duplicate or invalid data.
+- [x] GitHub Actions: immutable install, typecheck, build, self-hosted OCR asset validation, tracked migration, isolated PostgreSQL and parser/batch integration tests passed (20/20, run 43064676909).
+- [ ] Browser/user acceptance remains unverified; CI cannot measure OCR accuracy or UI behavior in actual TNW screenshots.
+- [ ] Browser acceptance with real TNW League screenshots for all five layouts, highlighted/scrolled rows and names with non-Latin scripts.
+- [ ] Evaluate measured OCR precision against annotated ground truth and adjust geometry/column mapping; current parser assumes four rightmost value tokens and may skip wrapped lines.
+- [ ] Eventually add team-wide objectives and opponent external IDs; keep all-unseen and unverified values unknown rather than zero.
+- [ ] Production rollout separately approved after Phase 3 uploads/cleanup and migrations through Guild League `0006`.

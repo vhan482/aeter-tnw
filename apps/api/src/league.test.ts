@@ -134,6 +134,71 @@ test('League: authenticated Main/Sub capture, identity merge, audited correction
       .body.players.find((r:{memberId:string;battlefield:string})=>
         r.memberId===memberA.id&&r.battlefield==='MAIN').kills,4);
     await request(app).get(correction+'/history').expect(401);
+
+    // A new match proves atomic reviewed imports without changing the
+    // original single-row fixture or mixing differently sorted screenshot tabs.
+    const batchMatch=await clerk.post(root+'/matches').set('Origin',origin)
+      .send({...metadata,opponentGuild:'Other Synthetic Opponent'}).expect(201);
+    const batchMatchId=batchMatch.body.match.id as string;
+    const batch=root+'/matches/'+batchMatchId+'/tab-results/batch';
+    const batchRow=(id:string,kills:number)=>({
+      memberId:id,reviewed:true,
+      metrics:{kills,assists:0,playerDamageRaw:'18.8B',buildingDamageRaw:null}
+    });
+    const batchBody={battlefield:'MAIN',tab:'DPS',
+      sourceReference:'test-reviewed-main-dps.png',
+      evidenceUploadId:null,reviewed:true,
+      rows:[batchRow(memberA.id,8),batchRow(memberB.id,3)]};
+    await request(app).post(batch).send(batchBody).expect(401);
+    await clerk.post(batch).send(batchBody).expect(403);
+    await clerk.post(batch).set('Origin',origin)
+      .send({...batchBody,reviewed:false}).expect(400);
+    await clerk.post(batch).set('Origin',origin)
+      .send({...batchBody,rows:[{...batchBody.rows[0],reviewed:false}]}).expect(400);
+    await clerk.post(batch).set('Origin',origin)
+      .send({...batchBody,rows:[batchBody.rows[0],batchBody.rows[0]]}).expect(409);
+    await clerk.post(batch).set('Origin',origin)
+      .send({...batchBody,tab:'SUPPORT'}).expect(400);
+    await clerk.post(batch).set('Origin',origin)
+      .send({...batchBody,battlefield:'MAIN',tab:'STRATEGY'}).expect(400);
+    await clerk.post(batch).set('Origin',origin)
+      .send({...batchBody,rows:[{...batchRow(memberA.id,8),
+        metrics:{kills:8,assists:0,playerDamageRaw:'bad',buildingDamageRaw:null}}]}).expect(400);
+    const unknownId='00000000-0000-4000-8000-000000000001';
+    await clerk.post(batch).set('Origin',origin)
+      .send({...batchBody,rows:[batchRow(unknownId,7)]}).expect(422);
+    const imported=await clerk.post(batch).set('Origin',origin)
+      .send(batchBody).expect(201);
+    assert.equal(imported.body.created,2);
+    await clerk.post(batch).set('Origin',origin)
+      .send(batchBody).expect(409);
+    const [thirdMember]=await db.insert(members).values({
+      characterName:'Third Synthetic Member',jobClass:'Archer'
+    }).returning();
+    await clerk.post(batch).set('Origin',origin)
+      .send({...batchBody,rows:[batchRow(memberA.id,9),batchRow(thirdMember.id,1)]})
+      .expect(409);
+    let batchDetail=await clerk.get(root+'/matches/'+batchMatchId).expect(200);
+    assert.equal(batchDetail.body.observations.length,2);
+    assert.equal(batchDetail.body.observations.some(
+      (r:{memberId:string})=>r.memberId===thirdMember.id),false);
+
+    const supportBody={...batchBody,tab:'SUPPORT',sourceReference:'support-source.png',
+      rows:[
+        {memberId:memberB.id,reviewed:true,
+          metrics:{deaths:0,revives:1,healingRaw:'3M',damageTakenRaw:null}},
+        {memberId:memberA.id,reviewed:true,
+          metrics:{deaths:2,revives:0,healingRaw:null,damageTakenRaw:'1M'}}
+      ]};
+    await clerk.post(batch).set('Origin',origin).send(supportBody).expect(201);
+    batchDetail=await clerk.get(root+'/matches/'+batchMatchId).expect(200);
+    assert.equal(batchDetail.body.observations.length,4);
+    const batchA=batchDetail.body.players.find((r:{memberId:string})=>r.memberId===memberA.id);
+    const batchB=batchDetail.body.players.find((r:{memberId:string})=>r.memberId===memberB.id);
+    assert.equal(batchA.kills,8);assert.equal(batchA.deaths,2);
+    assert.equal(batchB.kills,3);assert.equal(batchB.deaths,0);
+    assert.equal(batchB.healingEstimate,'3000000');
+
   }finally{await cleanup();await pool.end();}
 });
 

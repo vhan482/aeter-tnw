@@ -89,3 +89,9 @@ Case types: `ABSENCE_FOLLOWUP|AFK_REPORT|AWOL_REVIEW|GENERAL`. Case statuses: `O
 - `sourceReference`, optional private `evidenceUploadId`, reviewer, reviewedAt and optimistic version are stored per tab. Corrections are append-only snapshots with officer identity and reason.
 - Only Aeternum roster members are supported in the initial editor; enemy players may not be matched to local guild records. Group results by match + battlefield + member ID, **never row position**.
 - Missing screenshot rows are neither zero statistics nor attendance findings. OCR extraction and opponent-side performance need separate reviewed data contracts and benchmarks.
+
+## Guild League screenshot batch proposal (development branch)
+
+- Batch envelope `{battlefield,tab,sourceReference,evidenceUploadId?,reviewed:true,rows[]}` binds **one real match**, one battlefield, one screenshot tab, and one source to up to 50 selected row proposals. Each row must use a verified existing guild member ID, strict tab-specific metrics and `reviewed:true`; identities cannot repeat in the batch.
+- Each reviewed row is inserted into `league_player_tab_results` in one transaction and protected by existing `(match_id,battlefield,tab,member_id)` uniqueness. Validation/duplicate failures do not partially save; a previously uploaded temporary image may remain until seven-day retention cleanup.
+- User-selected battlefield/tab and exact match context are mandatory. Source screenshot ranking/order is never a merge key. Unrecognized/cropped rows may remain absent; zero is only explicit verified zero. Screenshot bytes are not auto-uploaded for OCR.

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { uploadMirrorEvidence } from './lib/mirror-evidence';
+import { leagueFieldSets } from './lib/league-ocr';
+import { LeagueOcrReview } from './LeagueOcrReview';
 import './guild-league.css';
 
 type Battlefield='MAIN'|'SUB';
@@ -16,24 +18,7 @@ type Player={memberId:string;characterName:string;battlefield:Battlefield;
   dps:Observation|null;support:Observation|null;strategy:Observation|null;
 };
 type Detail={match:Match;observations:Observation[];players:Player[];note:string};
-type Field={key:string;label:string;kind:'count'|'amount'};
-const fieldSets:Record<Tab,Field[]>={
-  DPS:[
-    {key:'kills',label:'Kills',kind:'count'},
-    {key:'assists',label:'Assists',kind:'count'},
-    {key:'playerDamageRaw',label:'Total player damage (NOT DPS)',kind:'amount'},
-    {key:'buildingDamageRaw',label:'Total building damage',kind:'amount'}],
-  SUPPORT:[
-    {key:'deaths',label:'Deaths',kind:'count'},
-    {key:'revives',label:'Revives',kind:'count'},
-    {key:'healingRaw',label:'Total healing',kind:'amount'},
-    {key:'damageTakenRaw',label:'Total damage taken',kind:'amount'}],
-  STRATEGY:[
-    {key:'minionMetricRaw',label:'Minion-related metric (label unverified)',kind:'amount'},
-    {key:'flagRepairs',label:'Flag repairs',kind:'count'},
-    {key:'bossFinishers',label:'Boss finishers',kind:'count'},
-    {key:'bossDamageRaw',label:'Total boss damage',kind:'amount'}]
-};
+const fieldSets=leagueFieldSets;
 const apiRoot='/api/management/league';
 const blankMetrics=()=>({kills:'',assists:'',playerDamageRaw:'',buildingDamageRaw:'',
   deaths:'',revives:'',healingRaw:'',damageTakenRaw:'',
@@ -210,10 +195,13 @@ export function GuildLeagueView({onExpired}:{onExpired:()=>void}){
         {detail&&<p className="roster-note">Selected match: {detail.match.opponentGuild}. Only our guild's verified player rows are supported in this first release.</p>}
       </section>
     </div>
+    {detail&&<LeagueOcrReview key={selected} matchId={selected}
+      existing={detail.observations} onExpired={onExpired}
+      onSaved={()=>refreshDetail(selected)}/>}
     {detail&&<div className="league-layout">
       <section className="roster-card">
         <h2>{editing?'Correct reviewed tab':'Record screenshot-tab result'}</h2>
-        <p className="roster-note">Manual capture first: existing Mirror World OCR is not calibrated for Guild League layouts. Empty values stay unknown; type 0 only if confirmed in game.</p>
+        <p className="roster-note">Manual capture or screenshot batch review above. League OCR is not yet calibrated against real game screenshots. Empty values stay unknown; enter 0 only if confirmed in game.</p>
         <form className="league-form" onSubmit={e=>void saveObservation(e)}>
           <label>Battlefield<select disabled={!!editing} value={battlefield}
             onChange={e=>changeBattlefield(e.target.value as Battlefield)}>

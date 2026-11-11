@@ -76,3 +76,12 @@ OCR is **candidate data**, not truth. Prefer zero-cost local computer-vision pro
 - Native TextDetector and manually pasted OCR text are fallbacks. The OCR confidence score is not evidence of correctness; all candidate rows remain unchecked and must be reviewed.
 - The English-only model can misread Unicode/CJK, icons, decorated fonts, dark UI outlines and K/M/B suffixes. Keep aliases and manual correction. Do not report extraction accuracy until benchmarked on labeled original TNW screenshots.
 - OCR assets are permanent application static files, **not** seven-day screenshot evidence. Screenshot bytes only go to private Aeternum storage after approved save.
+
+## Guild League candidate batch import (2026-11-12 branch)
+
+- Select the actual match, **MAIN** or **SUB**, and source tab **DPS**, **SUPPORT**, or Sub-only **STRATEGY** before reading. Five independent screenshot layouts share the existing local Tesseract engine; current column parsing is provisional, not calibrated.
+- The parser proposes lines with a name and exactly four rightmost metric tokens in the selected tab order; it can skip wrapped rows, alternate UI scales, composite icons and partial text. Neither unseen rows nor missing tab metrics are invented. Visible rank is display-only, never an identity join key.
+- Review candidates next to the original local image and raw OCR line. Roster/alias exact matches are suggestions; ambiguous/unmatched names demand manual member selection. Include boxes start unchecked. Raw text and edited values remain provisional until the reviewer explicitly confirms.
+- Treat dash/unknown placeholders as `NULL` not 0; a literal 0 survives. Verify count vs cumulative amount units and DPS-tab total vs actual DPS. The Sub minion statistic remains neutrally labeled as its screenshot heading is not independently confirmed.
+- On approval, optionally upload the image once to private seven-day evidence and transactionally save at most 50 selected verified tab rows; duplicate match/battlefield/tab/member identities reject the **whole batch**. No arbitrary OCR string enters an audited record without review.
+- This implementation has no labeled in-game screenshot benchmark. Its parser/integration tests use synthetic text only. **Do not claim accurate screenshot-to-columns OCR yet.** Request at least one full and scrolled sample for each layout; record per-field accuracy, identity collisions and browser device memory before production use.
