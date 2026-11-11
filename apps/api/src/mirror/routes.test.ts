@@ -7,7 +7,8 @@ import { createApp } from '../app.js';
 import { loadConfig } from '../config.js';
 import { hashPassword } from '../auth/password.js';
 import { members, memberAliases, officerAccounts, officerSessions, officerAudit,
-  mirrorWorldBosses, mirrorWorldSessions, mirrorWorldResults, mirrorWorldResultHistory } from '../db/schema.js';
+  mirrorWorldBosses, mirrorWorldSessions, mirrorWorldResults, mirrorWorldResultHistory,
+  mirrorWorldBossHistory } from '../db/schema.js';
 
 const url=process.env.AUTH_TEST_DATABASE_URL;
 
@@ -22,7 +23,8 @@ test('Mirror World: boss/session, human-reviewed leaderboard, privacy and audite
     const leader=request.agent(app),clerk=request.agent(app);
     async function clear(){
       await db.delete(mirrorWorldResultHistory);await db.delete(mirrorWorldResults);
-      await db.delete(mirrorWorldSessions);await db.delete(mirrorWorldBosses);
+      await db.delete(mirrorWorldSessions);await db.delete(mirrorWorldBossHistory);
+      await db.delete(mirrorWorldBosses);
       await db.delete(memberAliases);await db.delete(members);
       await db.delete(officerSessions);await db.delete(officerAudit);
       await db.delete(officerAccounts);
@@ -43,6 +45,27 @@ test('Mirror World: boss/session, human-reviewed leaderboard, privacy and audite
       const b=await leader.post(root+'/bosses').set('Origin',origin)
         .send({name:'Boss Test',race:null,size:null,element:null,elementLevel:null}).expect(201);
       const bossId=b.body.boss.id as string;
+      const bossUpdate=root+'/bosses/'+bossId;
+      const bossFields={
+        name:'Boss Test Updated',race:'Demon',size:'Large',element:'Fire',
+        elementLevel:2,reason:'Verified from in-game boss panel'
+      };
+      await clerk.patch(bossUpdate).set('Origin',origin)
+        .send({...bossFields,version:1}).expect(403);
+      await leader.patch(bossUpdate).send({...bossFields,version:1}).expect(403);
+      await leader.patch(bossUpdate).set('Origin',origin)
+        .send({...bossFields,version:999}).expect(409);
+      await leader.patch(bossUpdate).set('Origin',origin)
+        .send({...bossFields,version:1,reason:'no'}).expect(400);
+      const bossChange=await leader.patch(bossUpdate).set('Origin',origin)
+        .send({...bossFields,version:1}).expect(200);
+      assert.equal(bossChange.body.boss.version,2);
+      assert.equal(bossChange.body.boss.elementLevel,2);
+      const bossHistory=await clerk.get(bossUpdate+'/history').expect(200);
+      assert.equal(bossHistory.body.changes.length,1);
+      assert.equal(bossHistory.body.changes[0].before.name,'Boss Test');
+      assert.equal(bossHistory.body.changes[0].after.element,'Fire');
+
       await leader.post(root+'/bosses').set('Origin',origin)
         .send({name:'boss test'}).expect(409);
       const session=await clerk.post(root+'/sessions').set('Origin',origin)
@@ -107,5 +130,29 @@ test('Mirror World: boss/session, human-reviewed leaderboard, privacy and audite
       assert.equal(history.body.changes[0].before.damageRaw,'18.8B');
       assert.equal(history.body.changes[0].after.damageRaw,'18.9B');
       assert.equal((await clerk.get(root+'/sessions/'+sid).expect(200)).body.results.length,3);
+
+      const secondSession=await clerk.post(root+'/sessions').set('Origin',origin)
+        .send({bossId,startsAt:'2026-11-18T20:00:00+08:00',
+          durationSeconds:600,rotation:null}).expect(201);
+      await clerk.post(root+'/sessions/'+secondSession.body.session.id+'/results')
+        .set('Origin',origin).send({...row,damageRaw:'18.9B',rank:1}).expect(201);
+      const insightsUrl=root+'/insights?bossId='+bossId+'&memberId='+member.id;
+      await request(app).get(insightsUrl).expect(401);
+      await clerk.get(root+'/insights?bossId=bad&memberId='+member.id).expect(400);
+      const insights=await clerk.get(insightsUrl).expect(200);
+      assert.equal(insights.body.member.id,member.id);
+      assert.equal(insights.body.rows.length,2);
+      assert.equal(insights.body.rows[0].changeFromPreviousPercent,'+50.00');
+      assert.equal(insights.body.rows[0].bestAmongDisplayed,true);
+      assert.equal(insights.body.rows[1].bestAmongDisplayed,false);
+      assert.equal(insights.body.rows[1].changeFromPreviousPercent,null);
+      assert.equal(insights.body.hasMore,false);
+
+      // A session where this member is not visible must not become a fake zero.
+      await clerk.post(root+'/sessions').set('Origin',origin)
+        .send({bossId,startsAt:'2026-11-19T20:00:00+08:00',
+          durationSeconds:900,rotation:null}).expect(201);
+      assert.equal((await clerk.get(insightsUrl).expect(200)).body.rows.length,2);
+
     }finally{await clear();await pool.end();}
   });
