@@ -109,3 +109,15 @@ For backend-connected features, a feature is done only with UI/API behavior, mig
 - [ ] Add OCR candidate table/crops and roster alias matching; no automatic final saves, no guessed missing ranks.
 - [ ] Add editable boss race/size/element-level metadata and same-boss/GR comparison reports.
 - [ ] Deploy only after Phase 3 runtime migration and cleanup timer readiness; keep production isolated.
+
+## Mirror World OCR review milestone — feature branch (2026-11-11)
+
+- [x] Verify PR #5 merged and reuse its server-backed Mirror World sessions and private evidence uploads.
+- [x] Build a deterministic OCR text-to-candidate parser with partial/highlighted rank handling, duplicate warnings and Unicode-safe strict matching.
+- [x] Expose approved-member alias index and transactional reviewed-batch API; reject duplicate member/rank and ambiguous identity guesses.
+- [x] Add local image preview, experimental device TextDetector hook and paste-text fallback; editable candidate review before save.
+- [ ] Verify TypeScript/build/API tests in GitHub Actions; keep feature PR in draft until validated.
+- [ ] Obtain unmodified genuine in-game Mirror World screenshots and benchmark accuracy / Latin+non-Latin names / scroll and highlighted rows.
+- [ ] Integrate self-hosted Tesseract.js WASM/language assets for broad browser support only after bundle-size/privacy/accuracy evaluation; do not silently pull runtime code or image data from third-party CDNs.
+- [ ] Browser acceptance: native detection availability, preview, manual text fallback, alias collisions, no implicit member selection on ambiguous OCR, one-upload batch save.
+- [ ] Production remains unchanged. Do not activate this branch before required Phase 3 screenshot storage/migration/timer and Mirror World migration.
