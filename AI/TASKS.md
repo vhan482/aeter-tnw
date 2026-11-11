@@ -99,3 +99,13 @@ Use this as a working checklist; update checkboxes only after tests/verification
 ## Definition of Done
 
 For backend-connected features, a feature is done only with UI/API behavior, migration (if needed), server validation, authorized access, source provenance, duplicate/missing-data handling, tests and documentation updates. Mark blocked steps honestly.
+
+## In progress — Mirror World functional capture (2026-11-11)
+- [x] Create separate feature branch for Mirror World reviewed workflow; production VPS stays unchanged.
+- [x] Add typed large-number damage normalization, approximate 900-second average, and parser tests.
+- [x] Develop initial boss/session/result schema, authenticated API, edited-result audit and browser forms for manual capture.
+- [ ] Verify PR CI typecheck, fresh isolated migration, integration tests and manual browser flow before merging.
+- [ ] Benchmark OCR on actual in-game Mirror World ranking screenshots (including highlight row, partial/scroll views, Unicode names and cropped ranks).
+- [ ] Add OCR candidate table/crops and roster alias matching; no automatic final saves, no guessed missing ranks.
+- [ ] Add editable boss race/size/element-level metadata and same-boss/GR comparison reports.
+- [ ] Deploy only after Phase 3 runtime migration and cleanup timer readiness; keep production isolated.
