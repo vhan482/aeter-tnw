@@ -129,7 +129,8 @@ For backend-connected features, a feature is done only with UI/API behavior, mig
 - [x] Add bounded in-browser Canvas preparation, grayscale/contrast option, OCR progress and lazy worker teardown.
 - [x] Retain native device OCR and manual text fallback; output is candidate text only.
 - [x] Add production-build guard verifying OCR language, worker and WASM files are present.
-- [ ] CI: resolve pinned Yarn lockfile, verify immutable install, typecheck, build, integration tests, OCR asset copy and final PR review.
+- [x] CI: pinned Yarn lockfile, immutable install, TypeScript, build, isolated DB tests and self-hosted OCR asset verification passed on PR #7.
+- [ ] Complete human PR review and real browser acceptance before merging.
 - [ ] Browser acceptance across Chrome/Opera/Firefox/Safari/mobile as available; inspect CSP/worker loading and verify no outbound OCR resource requests.
 - [ ] Benchmark real Ragnarok: The New World screenshots: row extraction accuracy, names including non-Latin, suffix parsing, rank gaps, highlights and scroll offsets. Tune templates/cropping before enabling bulk production use.
 - [ ] Optionally self-host additional language models after measured demand and package footprint review.
