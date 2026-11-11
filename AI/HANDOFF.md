@@ -112,3 +112,11 @@
 - Screenshot file bytes stay in the user's browser until final approve/save; then existing private Phase 3 upload stores one image reference for the entire result batch, with seven-day deletion. No unreviewed data enters PostgreSQL.
 - Roster index/aliases are authenticated and read-only. New batch API enforces CSRF, human-reviewed flags, valid member IDs, duplicate member/rank rejection, damage validation and one SQL transaction (no partial save).
 - No schema, infrastructure, npm dependency or production VPS change in this branch. CI and real image/browser benchmark remain required.
+
+## 2026-11-11 — Cross-browser Mirror World OCR development branch
+
+- PR #6 confirmed merged into `main` at `0cd07f3`. The human-reviewed OCR candidate UI and transactional batch save are in code, not on production VPS.
+- Branch `feat/mirror-selfhosted-tesseract` adds pinned Tesseract.js 7 and English model from npm. Build script copies worker, WASM variants and language data to same-origin `public/ocr` (ignored in Git); CI checks built `dist/ocr`. Browser lazy-loads the engine after user clicks Read and never sends screenshot bytes to external OCR providers/CDNs.
+- Contrast-enhanced local Canvas processing caps source image at 12 megapixels/5 MB; native TextDetector and paste-text/manual workflows remain fallback options. OCR confidence is advisory, never an approval.
+- Known limitation: English model may not read non-Latin names accurately. OCR quality against real in-game screenshots has **not** been measured; request unedited varied resolution/scroll/highlighted screenshots for benchmark before broad feature acceptance.
+- No GitHub PR is production deployment authorization. The bastion is still serving Phase 2B code; Phase 3 and Mirror World migrations/storage/timer are not activated. User asked to prioritize application features over more VPS deployment steps.
