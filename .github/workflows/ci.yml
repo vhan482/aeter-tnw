@@ -44,6 +44,8 @@ jobs:
             exit 1
           fi
       - run: yarn build
+      - name: Verify self-hosted OCR assets in production output
+        run: node scripts/verify-ocr-assets.mjs
       - name: Apply tracked Drizzle migrations to isolated PostgreSQL
         run: yarn workspace @aeter/api db:migrate
         env:
