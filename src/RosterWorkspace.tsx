@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import './roster-workspace.css';
 import { AttendanceView, ActionCenterView } from './Phase3Workspace';
+import { MirrorWorldView } from './MirrorWorldWorkspace';
 
 type Role = 'GUILD_LEADER' | 'OFFICER' | 'CLERK';
 type Officer = { id:string; username:string; displayName:string; role:Role };
@@ -70,7 +71,7 @@ function Field({title,value,onChange}:{title:string;value:string|null;onChange:(
 export default function RosterWorkspace({officer,onSignOut,onManageOfficers,onExpired}:{
   officer:Officer;onSignOut:()=>void;onManageOfficers:()=>void;onExpired:()=>void
 }){
-  const [section,setSection]=useState<'members'|'attendance'|'actions'>('members');
+  const [section,setSection]=useState<'members'|'attendance'|'actions'|'mirror'>('members');
   const [members,setMembers]=useState<Member[]>([]);
   const [total,setTotal]=useState(0);
   const [selectedId,setSelectedId]=useState<string|null>(null);
@@ -214,7 +215,8 @@ export default function RosterWorkspace({officer,onSignOut,onManageOfficers,onEx
       {officer.role!=='CLERK'&&<button type="button" className={section==='actions'?'roster-nav-active':'roster-nav-muted'} onClick={()=>setSection('actions')}>
         ◈ <span>Member Action Center</span>
       </button>}
-      <div className="roster-nav-muted">⚒ <span>Mirror World — upcoming</span></div>
+      <button type="button" className={section==='mirror'?'roster-nav-active':'roster-nav-muted'}
+        onClick={()=>setSection('mirror')}>⚒ <span>Mirror World</span></button>
       <div className="roster-nav-muted">⚑ <span>Guild League — upcoming</span></div>
       <div className="roster-nav-muted">◈ <span>Guild Siege — upcoming</span></div>
       <div className="roster-side-foot">
@@ -318,7 +320,8 @@ export default function RosterWorkspace({officer,onSignOut,onManageOfficers,onEx
         </div>
       </div>}
       </>:section==='attendance'?<AttendanceView officer={officer} onExpired={onExpired}/>:
-      <ActionCenterView officer={officer} onExpired={onExpired}/>}
+      section==='actions'?<ActionCenterView officer={officer} onExpired={onExpired}/>:
+      <MirrorWorldView officer={officer} onExpired={onExpired}/>}
     </main>
   </div>;
 }
