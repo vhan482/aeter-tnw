@@ -140,3 +140,13 @@
 - Opponent-side individual statistics, team-wide objective summaries, screenshot OCR template calibration and bulk tab import are *not* implemented. Do not infer opponents as guild members or unseen players as absentees. Real TNW League screenshot benchmark remains pending.
 - New route `/api/management/league` is protected by existing officer session and Origin CSRF middleware; clerks may record and correct reviewed scores, while confidential officer cases remain separately restricted.
 - Production bastion still serves older compiled release; no production SQL migrations or restart authorized. Runtime prerequisites: Phase 3 evidence storage/timer and Mirror World migrations 0004/0005 before League 0006.
+
+## 2026-11-12 — Guild League OCR candidate batch review (feature branch; NOT DEPLOYED)
+
+- PR #9 was confirmed merged into main as `f504cac`. Guild League now has a validated per-match/per-battlefield/per-tab manual capture model, separate provenance per screenshot tab, and audited corrections.
+- Feature branch `feat/league-ocr-batch-review` adds **experimental** browser-only Tesseract screenshot OCR, text parsing and a human-reviewed batch importer across Main DPS, Main Support, Sub DPS, Sub Support and Sub Strategy (same four-field parser with explicitly selected tab-specific mappings).
+- Each OCR screenshot is explicitly labeled with match, battlefield and tab by the user; no automatic screen classification, no claimed real-image accuracy. Parser only proposes lines with name plus 4 rightmost metric tokens. Wrapped/partial/obscured rows can be missed; no inference of hidden players. Source lines and original image remain visible for side-by-side correction.
+- Existing local worker/WASM/English model and seven-day private evidence are reused. Screenshots stay in the browser while reading; upload occurs only after approval. English-only OCR and real screenshot calibration remain open acceptance gates.
+- Candidate rows default unchecked; exact roster/alias matches are suggestions, never evidence. Unknown values stay NULL and explicit zero stays zero; weird numeric glyphs cannot be saved until corrected. Main/Sub and five tabs are never mixed within one batch.
+- New authenticated `POST /api/management/league/matches/:id/tab-results/batch` allows 1–50 reviewed rows under one explicit battlefield/tab/source. Strict Zod per-tab validation, roster membership verification, duplicate-member detection, CSRF origin, and single SQL transaction/unique-key rejection prevent partial or duplicate imports.
+- No schema or dependency changes and NO changes to production Bastion/Inspector VPS. Test in CI and real browser, including actual TNW screenshots and mixed sort/scroll views, before merging/activating.
