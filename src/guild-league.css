@@ -28,3 +28,34 @@
 .league-merged-table th,.league-merged-table td{text-align:left;vertical-align:top;
  border-bottom:1px solid #39495a;padding:10px 9px;font-size:.81rem;white-space:nowrap}
 @media(max-width:980px){.league-layout{grid-template-columns:1fr}}
+
+.league-ocr{min-width:0}
+.league-ocr-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+.league-ocr-head h2{margin:0 0 8px}
+.league-ocr-head>strong{font-size:.69rem;letter-spacing:.09em;color:#f8d69d;
+  border:1px solid #967342;padding:7px 10px;border-radius:6px;white-space:nowrap}
+.league-ocr-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:14px 0}
+.league-ocr-context>label,.league-ocr-input label{display:grid;gap:7px;font-size:.89rem}
+.league-ocr-input{display:grid;align-content:start;gap:12px;min-width:0}
+.league-ocr-context select,.league-ocr-input input,.league-ocr-input textarea,.league-ocr-scroll input,
+.league-ocr-scroll select{width:100%;min-width:0;box-sizing:border-box;background:#121d2b;
+ color:#f3f6fb;border:1px solid #425268;border-radius:8px;padding:9px;font:inherit}
+.league-ocr-input textarea{resize:vertical;min-height:155px}
+.league-ocr-input button{justify-self:start}
+.league-ocr-preview{width:100%;max-height:310px;object-fit:contain;object-position:left center;
+ border-radius:8px;border:1px solid #425268}
+.league-ocr-input .league-ocr-check{display:flex;align-items:center;gap:8px}
+.league-ocr-check input[type=checkbox]{width:18px;min-width:18px}
+.league-ocr-form{display:grid;gap:11px}
+.league-ocr-scroll{overflow-x:auto;margin:10px 0}
+.league-ocr-scroll table{width:100%;min-width:1000px;border-collapse:collapse}
+.league-ocr-scroll th,.league-ocr-scroll td{border-bottom:1px solid #39495a;
+ padding:8px;vertical-align:top;text-align:left;font-size:.8rem}
+.league-ocr-scroll small{display:block;margin-top:5px;opacity:.78}
+.league-ocr-scroll td input[type=checkbox]{width:17px;min-width:17px}
+.league-ocr-scroll td select{min-width:190px}
+.league-ocr-scroll td input[type=text]{min-width:100px}
+.league-ocr-form .league-ocr-approve{display:flex;align-items:flex-start;gap:10px;max-width:800px;font-size:.86rem}
+.league-ocr-approve input[type=checkbox]{width:18px;min-width:18px;margin-top:2px}
+.league-ocr-form>.roster-primary{justify-self:start}
+@media(max-width:840px){.league-ocr-context{grid-template-columns:1fr}}
