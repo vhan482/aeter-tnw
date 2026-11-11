@@ -6,7 +6,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { createApp } from '../app.js';
 import { loadConfig } from '../config.js';
 import { hashPassword } from '../auth/password.js';
-import { members, officerAccounts, officerSessions, officerAudit,
+import { members, memberAliases, officerAccounts, officerSessions, officerAudit,
   mirrorWorldBosses, mirrorWorldSessions, mirrorWorldResults, mirrorWorldResultHistory } from '../db/schema.js';
 
 const url=process.env.AUTH_TEST_DATABASE_URL;
@@ -23,7 +23,7 @@ test('Mirror World: boss/session, human-reviewed leaderboard, privacy and audite
     async function clear(){
       await db.delete(mirrorWorldResultHistory);await db.delete(mirrorWorldResults);
       await db.delete(mirrorWorldSessions);await db.delete(mirrorWorldBosses);
-      await db.delete(members);
+      await db.delete(memberAliases);await db.delete(members);
       await db.delete(officerSessions);await db.delete(officerAudit);
       await db.delete(officerAccounts);
     }
@@ -59,8 +59,37 @@ test('Mirror World: boss/session, human-reviewed leaderboard, privacy and audite
         .send({...row,damageRaw:'garbled'}).expect(422);
       await clerk.post(path).set('Origin',origin).send(row).expect(201);
       await clerk.post(path).set('Origin',origin).send(row).expect(409);
+
+      const [second,third]=await db.insert(members).values([
+        {characterName:'Second Fixture',jobClass:'Mage'},
+        {characterName:'Third Fixture',jobClass:'Knight'}
+      ]).returning();
+      await db.insert(memberAliases).values({memberId:second.id,alias:'Renamed Mage'});
+      const rosterIndex=await clerk.get(root+'/roster-index').expect(200);
+      assert.ok(rosterIndex.body.members.some((p:{id:string;aliases:string[]})=>
+        p.id===second.id&&p.aliases.includes('Renamed Mage')));
+      await request(app).get(root+'/roster-index').expect(401);
+
+      const batch=root+'/sessions/'+sid+'/results/batch';
+      const secondRow={...row,memberId:second.id,rank:2,damageRaw:'14.3B'};
+      const thirdRow={...row,memberId:third.id,rank:4,damageRaw:'9.8B'};
+      await clerk.post(batch).send({reviewed:true,rows:[secondRow]}).expect(403);
+      await clerk.post(batch).set('Origin',origin)
+        .send({reviewed:false,rows:[secondRow]}).expect(400);
+      await clerk.post(batch).set('Origin',origin)
+        .send({reviewed:true,rows:[secondRow,secondRow]}).expect(409);
+      await clerk.post(batch).set('Origin',origin)
+        .send({reviewed:true,rows:[secondRow,{...thirdRow,rank:2}]}).expect(409);
+      await clerk.post(batch).set('Origin',origin)
+        .send({reviewed:true,rows:[secondRow,{...thirdRow,damageRaw:'unreadable'}]}).expect(422);
+      const inserted=await clerk.post(batch).set('Origin',origin)
+        .send({reviewed:true,rows:[secondRow,thirdRow]}).expect(201);
+      assert.equal(inserted.body.created,2);
+      await clerk.post(batch).set('Origin',origin)
+        .send({reviewed:true,rows:[secondRow]}).expect(409);
+
       const detail=await leader.get(root+'/sessions/'+sid).expect(200);
-      assert.equal(detail.body.results.length,1);
+      assert.equal(detail.body.results.length,3);
       assert.equal(detail.body.results[0].damageRaw,'18.8B');
       assert.equal(detail.body.results[0].damageEstimate,'18800000000');
       assert.equal(detail.body.results[0].averageDpsEstimate,'20888888.89');
@@ -77,6 +106,6 @@ test('Mirror World: boss/session, human-reviewed leaderboard, privacy and audite
       assert.equal(history.body.changes.length,1);
       assert.equal(history.body.changes[0].before.damageRaw,'18.8B');
       assert.equal(history.body.changes[0].after.damageRaw,'18.9B');
-      assert.equal((await clerk.get(root+'/sessions/'+sid).expect(200)).body.results.length,1);
+      assert.equal((await clerk.get(root+'/sessions/'+sid).expect(200)).body.results.length,3);
     }finally{await clear();await pool.end();}
   });
