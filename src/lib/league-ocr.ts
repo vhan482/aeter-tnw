@@ -38,8 +38,19 @@ const missing=/^(?:-|—|–|N\/A|UNKNOWN|\?)$/i;
 
 export function validLeagueField(value:string,kind:'count'|'amount'):boolean{
   if(value==='')return true; // unknown; do not silently convert to zero
-  if(kind==='amount')return amount.test(value) && value.length<=32 &&
-    !/^\d+\.\d+$/.test(value);
+  if(kind==='amount'){
+    if(!amount.test(value)||value.length>32)return false;
+    const clean=value.toUpperCase().replaceAll(',','').replace(/\s+/g,'');
+    const match=/^(\d{1,15})(?:\.(\d{1,3}))?([KMBT]?)$/.exec(clean);
+    if(!match)return false;
+    const [,whole,decimal='',suffix]=match;
+    const exponent:Record<string,number>={'':0,K:3,M:6,B:9,T:12};
+    const order=exponent[suffix];
+    if(decimal.length>order)return false;
+    const scaled=BigInt(whole)*10n**BigInt(order)+
+      (decimal?BigInt(decimal)*10n**BigInt(order-decimal.length):0n);
+    return scaled<10n**24n; // Mirror/League database NUMERIC(24,0) invariant
+  }
   if(!count.test(value))return false;
   const number=Number(value);
   return Number.isSafeInteger(number)&&number>=0&&number<=2_000_000_000;
