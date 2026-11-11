@@ -129,3 +129,14 @@
 - Authenticated `GET /api/management/mirror-world/insights?bossId=&memberId=` shows up to 100 reviewed results (UI: latest 40), same-boss member only. It calculates duration-aware approximate average DPS and signed run-over-run changes with BigInt-safe exact ratios, and marks the *best within the displayed window*, not an all-time best.
 - Explicitly do **not** infer missed sessions as zero performance, invent members, cross-compare bosses/classes, or silently equate roster Rating with verified GR. Current boss metadata revisions do not imply all prior events were fought under that revised taxonomy.
 - No VPS, systemd, Nginx, runtime deployment or production SQL changes. CI and browser acceptance gates are pending; Phase 3 upload/timer and Mirror World `0004` remain prerequisites before production rollout of `0005`.
+
+## 2026-11-11 — Guild League reviewed capture (PR pending; no production changes)
+
+- PR #8 merged into main at `79d7e1c`. Core Guild League feature branch `feat/guild-league-reviewed-results` now builds on the existing auth/roster/evidence foundations.
+- Additive migration `0006_guild_league_core`: match metadata, per-guild-member screenshot-tab observations, immutable corrections; Drizzle snapshot and journal included.
+- Guild League match: opponent guild, event instant (UTC), nullable stage and reviewed result. Main and Sub battlefields are distinct. Per-tab stats are strict-validated DPS (kills/assists/total player/building damage), Support (deaths/revives/total healing/damage taken), Sub-only Strategy (unverified minion metric, flag repairs, boss finishers, total boss damage).
+- DPS/Support/Strategy screenshot rows are **never merged by visual row index**. Uniqueness is (match,battlefield,tab,canonical member ID); the GET view consolidates by (battlefield,member ID). Unknowns remain null; explicit verified zero remains zero. Damage strings retain K/M/B/T raw display and are cumulative totals, not DPS rates.
+- Manual-first screenshot review UI uses optional existing private screenshot upload; requires human approval and source reference. Each correction requires a reason, optimistic record version and an append-only audit trail. One member can appear in Main and Sub independently.
+- Opponent-side individual statistics, team-wide objective summaries, screenshot OCR template calibration and bulk tab import are *not* implemented. Do not infer opponents as guild members or unseen players as absentees. Real TNW League screenshot benchmark remains pending.
+- New route `/api/management/league` is protected by existing officer session and Origin CSRF middleware; clerks may record and correct reviewed scores, while confidential officer cases remain separately restricted.
+- Production bastion still serves older compiled release; no production SQL migrations or restart authorized. Runtime prerequisites: Phase 3 evidence storage/timer and Mirror World migrations 0004/0005 before League 0006.

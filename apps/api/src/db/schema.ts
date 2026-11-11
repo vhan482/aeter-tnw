@@ -277,3 +277,46 @@ export const mirrorWorldBossHistory = pgTable('mirror_world_boss_history', {
   changedBy: uuid('changed_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
   changedAt: timestamp('changed_at', { withTimezone: true }).notNull().defaultNow()
 }, table => [index('mirror_world_boss_history_boss_idx').on(table.bossId)]);
+
+/** Guild League is a match-level record; opponent PLAYER identities are not
+ * inferred or merged with our internal member registry in this MVP. */
+export const leagueMatches=pgTable('league_matches',{
+  id:uuid('id').primaryKey().defaultRandom(),
+  opponentGuild:varchar('opponent_guild',{length:128}).notNull(),
+  occurredAt:timestamp('occurred_at',{withTimezone:true}).notNull(),
+  stage:varchar('stage',{length:24}),
+  result:varchar('result',{length:24}),
+  createdBy:uuid('created_by').references(()=>officerAccounts.id,{onDelete:'set null'}),
+  createdAt:timestamp('created_at',{withTimezone:true}).notNull().defaultNow()
+},table=>[index('league_matches_date_idx').on(table.occurredAt)]);
+
+/** A single reviewed Guild League screenshot-tab row. Tab stats are strict
+ * Zod-validated JSONB, with raw displayed damage values (not DPS rates).
+ * Unique identity is (match, battlefield, tab, guild member), never row index.
+ */
+export const leaguePlayerTabResults=pgTable('league_player_tab_results',{
+  id:uuid('id').primaryKey().defaultRandom(),
+  matchId:uuid('match_id').notNull().references(()=>leagueMatches.id,{onDelete:'restrict'}),
+  battlefield:varchar('battlefield',{length:8}).notNull(),
+  tab:varchar('tab',{length:12}).notNull(),
+  memberId:uuid('member_id').notNull().references(()=>members.id,{onDelete:'restrict'}),
+  metrics:jsonb('metrics').$type<Record<string,string|number|null>>().notNull(),
+  sourceReference:varchar('source_reference',{length:255}).notNull(),
+  evidenceUploadId:uuid('evidence_upload_id').references(()=>attendanceEvidence.id,{onDelete:'restrict'}),
+  reviewedBy:uuid('reviewed_by').references(()=>officerAccounts.id,{onDelete:'set null'}),
+  reviewedAt:timestamp('reviewed_at',{withTimezone:true}).notNull().defaultNow(),
+  version:integer('version').notNull().default(1)
+},table=>[
+  uniqueIndex('league_tabs_member_uidx').on(table.matchId,table.battlefield,table.tab,table.memberId),
+  index('league_tabs_match_idx').on(table.matchId)
+]);
+
+export const leaguePlayerTabHistory=pgTable('league_player_tab_history',{
+  id:uuid('id').primaryKey().defaultRandom(),
+  tabResultId:uuid('tab_result_id').notNull().references(()=>leaguePlayerTabResults.id,{onDelete:'restrict'}),
+  before:jsonb('before').$type<Record<string,unknown>>().notNull(),
+  after:jsonb('after').$type<Record<string,unknown>>().notNull(),
+  reason:text('reason').notNull(),
+  changedBy:uuid('changed_by').references(()=>officerAccounts.id,{onDelete:'set null'}),
+  changedAt:timestamp('changed_at',{withTimezone:true}).notNull().defaultNow()
+},table=>[index('league_tabs_history_result_idx').on(table.tabResultId)]);

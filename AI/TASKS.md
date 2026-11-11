@@ -146,3 +146,16 @@ For backend-connected features, a feature is done only with UI/API behavior, mig
 - [ ] Browser acceptance of real boss metadata correction, history, member selection and progression.
 - [ ] Confirm guild reporting-week reset and actual verified GR semantics before introducing same-week GR efficiency/analytics.
 - [ ] Continue Guild League Main/Sub performance recording after usable Mirror World review.
+
+## Guild League functional MVP — 2026-11-11 feature branch
+
+- [x] Verify PR #8 merged; scope first Guild League release to **Aeternum roster members**, not enemy individual entries.
+- [x] Add additive match/tab observation/audit schema, migration 0006, journal/snapshot.
+- [x] Add authenticated match creation/list/detail and source-reviewed screenshot-tab capture with per-tab Zod validation.
+- [x] Merge Main/Sub + DPS/Support/Strategy by stable member ID; never same visual rank or row index.
+- [x] Add manual capture and corrected-history UI, optional seven-day private screenshot evidence, nullable vs explicit zero fields.
+- [ ] GitHub CI: immutable install, typecheck, build, Drizzle drift, isolated Postgres, auth/CSRF/integration tests.
+- [ ] Browser acceptance with real League screenshots, metadata and member list; verify input, correction and provenance.
+- [ ] Benchmark Guild League OCR templates (Main/Sub DPS/Support/Strategy) against real labeled screenshots before adding candidate batch importer.
+- [ ] Add opponent external identity strategy, team-wide kills/participants/objectives and phase/score nuances after validating game screenshots.
+- [ ] No production deployment without separately approved Phase 3 retention setup, additive migrations and backup/restore gate.

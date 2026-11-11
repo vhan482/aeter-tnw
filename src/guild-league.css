@@ -1,0 +1,30 @@
+.guild-league{display:grid;gap:18px}
+.league-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.league-layout>.roster-card{min-width:0}
+.league-form{display:grid;gap:12px;margin:12px 0 4px}
+.league-form>label{display:grid;gap:6px;font-size:.89rem}
+.league-form input:not([type="checkbox"]),.league-form select,.league-form textarea{
+ width:100%;min-width:0;box-sizing:border-box;color:#f3f6fb;background:#121d2b;
+ border:1px solid #425268;border-radius:8px;padding:10px;font:inherit
+}
+.league-form textarea{min-height:84px;resize:vertical}
+.league-form input:disabled,.league-form select:disabled{opacity:.65}
+.league-form .league-confirm{display:flex;gap:10px;align-items:flex-start}
+.league-form .league-confirm input{width:17px;min-width:17px;margin-top:3px}
+.league-form-actions{display:flex;gap:9px;flex-wrap:wrap}
+.league-matches{display:grid;gap:8px;max-height:320px;overflow:auto}
+.league-matches button{display:grid;gap:5px;padding:11px;text-align:left;color:inherit;
+ background:transparent;border:1px solid #394a60;border-radius:8px;cursor:pointer}
+.league-matches button:hover,.league-matches button.league-selected{background:#1c2c3d;border-color:#7ebde0}
+.league-matches small,.league-observation small{opacity:.75}
+.league-observation-list{display:grid;gap:10px;max-height:670px;overflow:auto}
+.league-observation{display:grid;gap:8px;border:1px solid #36495d;padding:12px;border-radius:8px;
+ font-size:.85rem;overflow-wrap:anywhere}
+.league-observation>div{display:flex;flex-wrap:wrap;gap:6px 12px}
+.league-observation>button{justify-self:start}
+.league-observation a{color:#90d1fb}
+.league-merged-table{overflow-x:auto;margin:10px 0}
+.league-merged-table table{border-collapse:collapse;width:100%;min-width:850px}
+.league-merged-table th,.league-merged-table td{text-align:left;vertical-align:top;
+ border-bottom:1px solid #39495a;padding:10px 9px;font-size:.81rem;white-space:nowrap}
+@media(max-width:980px){.league-layout{grid-template-columns:1fr}}
