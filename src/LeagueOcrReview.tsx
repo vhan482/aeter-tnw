@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { matchRosterIdentity, type RosterIdentity } from './lib/mirror-ocr';
 import { readMirrorScreenshotWithTesseract, verifyMirrorScreenshot } from './lib/tesseract-reader';
 import { uploadMirrorEvidence } from './lib/mirror-evidence';
@@ -7,7 +7,7 @@ import { leagueFieldSets, parseLeagueTabText, validLeagueField,
 
 type Existing={memberId:string;battlefield:LeagueBattlefield;tab:LeagueTab};
 type Proposed={
-  key:number;detectedName:string;visibleRank:number|null;
+  key:number;detectedName:string;sourceLine:string;visibleRank:number|null;
   memberId:string;selected:boolean;matchStatus:string;
   values:Record<string,string>;warnings:string[];
 };
@@ -19,6 +19,7 @@ function message(error:unknown){return error instanceof Error?error.message:'Una
 
 export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
   const [roster,setRoster]=useState<RosterIdentity[]>([]);
+  const fileInput=useRef<HTMLInputElement|null>(null);
   const [battlefield,setBattlefield]=useState<LeagueBattlefield>('MAIN');
   const [tab,setTab]=useState<LeagueTab>('DPS');
   const [file,setFile]=useState<File|null>(null);
@@ -75,6 +76,7 @@ export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
     (reference.trim().length===0||reference.trim().length>=3);
 
   function resetCapture(){
+    if(fileInput.current)fileInput.current.value='';
     setFile(null);setRawText('');setReference('');setCandidates([]);
     setApproved(false);setError('');setNotice('');setProgress(null);
   }
@@ -113,7 +115,8 @@ export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
     }
     setCandidates(data.map((candidate,key)=>{
       const match=matchRosterIdentity(candidate.detectedName,roster);
-      return {key,detectedName:candidate.detectedName,visibleRank:candidate.visibleRank,
+      return {key,detectedName:candidate.detectedName,sourceLine:candidate.sourceLine,
+        visibleRank:candidate.visibleRank,
         memberId:match.memberId??'',matchStatus:match.status,selected:false,
         values:candidate.values,warnings:candidate.warnings};
     }));
@@ -174,13 +177,13 @@ export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
     <div className="league-ocr-context">
       <div className="league-ocr-input">
         <label>Original screenshot (JPEG/PNG/WebP, max 5 MB)
-          <input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy}
+          <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" disabled={busy}
             onChange={e=>{
               const selectedFile=e.target.files?.[0]??null;
               try{if(selectedFile)verifyMirrorScreenshot(selectedFile);
                 setFile(selectedFile);setError('');
               }catch(err){setFile(null);setError(message(err));}
-              setCandidates([]);setRawText('');setApproved(false);
+              setCandidates([]);setRawText('');setReference('');setApproved(false);
             }}/></label>
         {imageUrl&&<img src={imageUrl} className="league-ocr-preview"
           alt="Local Guild League screenshot to compare with OCR candidates"/>}
@@ -220,7 +223,8 @@ export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
           <td><input type="checkbox" checked={row.selected}
             aria-label={`Include candidate ${row.key+1}`}
             onChange={e=>setRow(row.key,{selected:e.target.checked})}/></td>
-          <td>{row.detectedName}<small>{row.visibleRank===null?'Rank not read':`Rank #${row.visibleRank}`}</small>
+          <td>{row.detectedName}<small className="league-ocr-source-line">{row.sourceLine}</small>
+            <small>{row.visibleRank===null?'Rank not read':`Rank #${row.visibleRank}`}</small>
             <small>{row.matchStatus==='EXACT'?'Exact roster match suggested':row.matchStatus==='AMBIGUOUS'?'Ambiguous alias':'Unmatched player'}</small></td>
           <td><select value={row.memberId} aria-label={`Member for row ${row.key+1}`}
             onChange={e=>setRow(row.key,{memberId:e.target.value})}>
