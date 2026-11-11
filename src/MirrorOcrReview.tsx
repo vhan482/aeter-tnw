@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { groupTextBlocks, matchRosterIdentity, parseMirrorLeaderboardText,
+import { matchRosterIdentity, parseMirrorLeaderboardText,
   readScreenshotWithNativeOcr, type RosterIdentity } from './lib/mirror-ocr';
 import { uploadMirrorEvidence } from './lib/mirror-evidence';
 
