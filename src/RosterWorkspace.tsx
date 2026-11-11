@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import './roster-workspace.css';
 import { AttendanceView, ActionCenterView } from './Phase3Workspace';
 import { MirrorWorldView } from './MirrorWorldWorkspace';
+import { GuildLeagueView } from './GuildLeagueWorkspace';
 
 type Role = 'GUILD_LEADER' | 'OFFICER' | 'CLERK';
 type Officer = { id:string; username:string; displayName:string; role:Role };
@@ -71,7 +72,7 @@ function Field({title,value,onChange}:{title:string;value:string|null;onChange:(
 export default function RosterWorkspace({officer,onSignOut,onManageOfficers,onExpired}:{
   officer:Officer;onSignOut:()=>void;onManageOfficers:()=>void;onExpired:()=>void
 }){
-  const [section,setSection]=useState<'members'|'attendance'|'actions'|'mirror'>('members');
+  const [section,setSection]=useState<'members'|'attendance'|'actions'|'mirror'|'league'>('members');
   const [members,setMembers]=useState<Member[]>([]);
   const [total,setTotal]=useState(0);
   const [selectedId,setSelectedId]=useState<string|null>(null);
@@ -217,7 +218,8 @@ export default function RosterWorkspace({officer,onSignOut,onManageOfficers,onEx
       </button>}
       <button type="button" className={section==='mirror'?'roster-nav-active':'roster-nav-muted'}
         onClick={()=>setSection('mirror')}>⚒ <span>Mirror World</span></button>
-      <div className="roster-nav-muted">⚑ <span>Guild League — upcoming</span></div>
+      <button type="button" className={section==='league'?'roster-nav-active':'roster-nav-muted'}
+        onClick={()=>setSection('league')}>⚑ <span>Guild League</span></button>
       <div className="roster-nav-muted">◈ <span>Guild Siege — upcoming</span></div>
       <div className="roster-side-foot">
         <div className="roster-signed"><small>SIGNED IN</small><strong>{officer.displayName}</strong><span>{officer.role.replaceAll('_',' ')} · @{officer.username}</span></div>
@@ -321,7 +323,8 @@ export default function RosterWorkspace({officer,onSignOut,onManageOfficers,onEx
       </div>}
       </>:section==='attendance'?<AttendanceView officer={officer} onExpired={onExpired}/>:
       section==='actions'?<ActionCenterView officer={officer} onExpired={onExpired}/>:
-      <MirrorWorldView officer={officer} onExpired={onExpired}/>}
+      section==='mirror'?<MirrorWorldView officer={officer} onExpired={onExpired}/>:
+ <GuildLeagueView onExpired={onExpired}/>}
     </main>
   </div>;
 }
