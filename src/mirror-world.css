@@ -1,0 +1,31 @@
+.mirror-world{display:grid;gap:20px}
+.mirror-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.mirror-layout>.roster-card{min-width:0}
+.mirror-layout h2{margin:0 0 12px}
+.mirror-layout h3{margin:0 0 6px}
+.mirror-form{display:grid;gap:12px;margin:14px 0 24px}
+.mirror-form>label{display:grid;gap:6px;font-size:.9rem}
+.mirror-form input:not([type="checkbox"]),.mirror-form textarea,.mirror-form select{
+  width:100%;min-width:0;box-sizing:border-box;padding:10px 11px;border-radius:8px;
+  background:#121d2b;color:#f3f6fb;border:1px solid #425268;font:inherit
+}
+.mirror-form textarea{min-height:75px;resize:vertical}
+.mirror-form .mirror-review{display:flex;align-items:start;gap:9px}
+.mirror-form .mirror-review input{margin-top:3px}
+.mirror-sessions{display:grid;gap:8px;max-height:310px;overflow:auto}
+.mirror-sessions button{display:grid;gap:4px;text-align:left;padding:12px;border:1px solid #3b485b;
+  border-radius:9px;background:transparent;color:inherit;cursor:pointer}
+.mirror-sessions button:hover,.mirror-sessions button.mirror-active{border-color:#7ebde0;background:#1c2c3d}
+.mirror-sessions button span,.mirror-result small{font-size:.8rem;opacity:.8}
+.mirror-session-summary{margin-top:20px;border-top:1px solid #3b485b;padding-top:15px}
+.mirror-session-summary small{opacity:.75}
+.mirror-results{display:grid;gap:10px}
+.mirror-result{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;
+  padding:12px;border:1px solid #38475b;border-radius:9px}
+.mirror-result>div{display:grid;align-content:start;gap:6px;min-width:0;overflow-wrap:anywhere}
+.mirror-result .mirror-numbers{text-align:right}
+.mirror-result .mirror-numbers a{font-size:.8rem;color:#90d1fb}
+.mirror-result .mirror-numbers button{justify-self:end}
+.mirror-actions{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:980px){.mirror-layout{grid-template-columns:1fr}}
+@media(max-width:520px){.mirror-result{grid-template-columns:1fr}.mirror-result .mirror-numbers{text-align:left}.mirror-result .mirror-numbers button{justify-self:start}}
