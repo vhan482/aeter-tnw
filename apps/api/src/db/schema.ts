@@ -226,7 +226,8 @@ export const mirrorWorldBosses = pgTable('mirror_world_bosses', {
   element: varchar('element', { length: 50 }),
   elementLevel: integer('element_level'),
   createdBy: uuid('created_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  version: integer('version').notNull().default(1)
 }, table => [uniqueIndex('mirror_world_boss_name_uidx').on(sql`lower(${table.name})`)]);
 
 export const mirrorWorldSessions = pgTable('mirror_world_sessions', {
@@ -264,3 +265,15 @@ export const mirrorWorldResultHistory = pgTable('mirror_world_result_history', {
   changedBy: uuid('changed_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
   changedAt: timestamp('changed_at', { withTimezone: true }).notNull().defaultNow()
 }, table => [index('mirror_world_result_history_idx').on(table.resultId)]);
+
+/** Immutable audit trail of boss metadata corrections; changing a catalog entry
+ * does not rewrite saved result values, session dates or duration. */
+export const mirrorWorldBossHistory = pgTable('mirror_world_boss_history', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  bossId: uuid('boss_id').notNull().references(() => mirrorWorldBosses.id, { onDelete: 'restrict' }),
+  before: jsonb('before').$type<Record<string, unknown>>().notNull(),
+  after: jsonb('after').$type<Record<string, unknown>>().notNull(),
+  reason: text('reason').notNull(),
+  changedBy: uuid('changed_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  changedAt: timestamp('changed_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [index('mirror_world_boss_history_boss_idx').on(table.bossId)]);
