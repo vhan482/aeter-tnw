@@ -2,10 +2,11 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import './mirror-world.css';
 import { uploadMirrorEvidence } from './lib/mirror-evidence';
 import { MirrorOcrReview } from './MirrorOcrReview';
+import { MirrorBossInsights } from './MirrorBossInsights';
 
 type Officer={id:string;role:'GUILD_LEADER'|'OFFICER'|'CLERK'};
 type Context={officer:Officer;onExpired:()=>void};
-type Boss={id:string;name:string;race:string|null;size:string|null;element:string|null;elementLevel:number|null};
+type Boss={id:string;name:string;race:string|null;size:string|null;element:string|null;elementLevel:number|null;version:number};
 type Session={id:string;bossId:string;bossName:string;startsAt:string;durationSeconds:number;rotation:string|null};
 type Member={id:string;characterName:string};
 type Result={
@@ -49,6 +50,7 @@ export function MirrorWorldView({officer,onExpired}:Context){
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
   const [notice,setNotice]=useState('');
+  const [refreshCounter,setRefreshCounter]=useState(0);
 
   const refresh=useCallback(async()=>{
     const [b,s,m]=await Promise.all([
@@ -63,6 +65,7 @@ export function MirrorWorldView({officer,onExpired}:Context){
   const refreshDetail=useCallback(async(id:string)=>{
     const data=await api<Detail>(root+'/sessions/'+id,{},onExpired);
     setDetail(data);
+    setRefreshCounter(old=>old+1);
   },[onExpired]);
   useEffect(()=>{void refresh().catch(e=>setError(message(e)));},[refresh]);
   useEffect(()=>{
@@ -171,12 +174,16 @@ export function MirrorWorldView({officer,onExpired}:Context){
         </div>}
       </section>
     </div>
+    <MirrorBossInsights bosses={bosses} members={members}
+      activeBossId={detail?.session.bossId??bossId} role={officer.role}
+      refreshCounter={refreshCounter} onExpired={onExpired}
+      onBossUpdated={async()=>{await refresh();if(selected)await refreshDetail(selected);}} />
     {detail&&<MirrorOcrReview sessionId={selected} existing={detail.results}
       onExpired={onExpired} onSaved={()=>refreshDetail(selected)} />}
     {detail&&<div className="mirror-layout">
       <section className="roster-card">
         <h2>{editing?'Correct reviewed result':'Record player result'}</h2>
-        <p className="roster-note">OCR is not enabled yet. Read the screenshot manually and verify every field before saving.</p>
+        <p className="roster-note">Use manual entry or the screenshot reader above. Verify every value against the original image before saving.</p>
         <form className="mirror-form" onSubmit={saveResult}>
           <label>Member<select required value={form.memberId}
             onChange={e=>setForm({...form,memberId:e.target.value})}>
