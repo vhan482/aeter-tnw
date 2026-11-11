@@ -24,11 +24,11 @@ Build a **cost-conscious, self-hosted guild operations and analytics dashboard**
 - **Local frontend prototype:** React/Vite/TypeScript `src/App.tsx` with basic Members, Gear, Events, Attendance, Performance and Evidence CRUD, localStorage + IndexedDB, and ExcelJS import/export. **Prototype only**; browser storage is not a shared guild database. Existing import replaces browser records after a warning.
 - **Implementation status:** Yarn 4 + Express health/readiness and initial local PostgreSQL roster migrations were merged in PR #1. Officer-only authentication was merged in PR #2. **Deployed:** PR #3 PostgreSQL roster/weekly GR, officer-only login and Nginx/HTTPS on the bastion, verified from live deployment logs and browser screenshot on November 11. **Phase 3 status:** attendance, private Member Action Center and seven-day local screenshot storage code merged via PR #4; production rollout/browser verification of these modules not yet confirmed. **Not implemented:** Drive/Sheets sync, OCR, Team Planner, and WebP job icon integration.
 - **Hosting:** Deployed to Debian 13 Bastion/Inspector utility VPS with native PostgreSQL 17, systemd Express and Nginx HTTPS. Existing SSH management role makes network isolation, resource monitoring, MFA/access gate and host hardening outstanding tasks. Zulip is not the hosting target.
-- **Reference UI:** The RONW Guild Management Tool screenshots inspired future team planning and dashboard workflows. They are **design references, not Aeternum member data, licensed source code, or proof that those features exist here**.
+- **Reference UI:** The RONW Guild Management Tool screenshots inspired future team planning and dashboard workflows. A further 2026-11-11 screenshot review of Auction, League, Mirror World, Polarity Zone, Siege maps, attendance, history, profile and Discord appears in Section 3.10. These are **UI observations**, not tested app behavior, validated game rules, Aeternum member data, licensed source code or proof that Aeternum ships these features.
 
 **Delivered:** [PR #1](https://github.com/vhan482/aeter-tnw/pull/1) was merged on 2026-11-10: Yarn 4, Express health/readiness, local PostgreSQL and tracked initial roster migrations. **Delivered:** Officer-only authentication PR #2 merged 2026-11-10. **Delivered:** PR #3 merged; server-backed Member Registry and weekly GR running at https://aeternum.eleven22.io. **Merged:** [PR #4](https://github.com/vhan482/aeter-tnw/pull/4) includes Phase 3 event/checkpoint recording, officer casework and seven-day local screenshot retention. Live deployment of PR #4 is not yet verified. OCR, Google Drive integration and Sheets sync are not implemented.
 
-**Scope convention:** Sections 3.1–3.6 are the **core planned product**. Section 3.7 is the approved-future Team Planner. Section 3.8 lists **deferred ideas**, not commitments. Section 3.9 is an **agreed visual enhancement**, not shipped functionality or approved reuse of third-party artwork. Exact implementation choices remain subject to tests and user review.
+**Scope convention:** Sections 3.1–3.6 are the **core planned product**. Section 3.7 is the approved-future Team Planner. Section 3.8 lists **deferred ideas**, not commitments. Section 3.9 is an **agreed visual enhancement**, not shipped functionality or approved reuse of third-party artwork. Section 3.10 is a **reference-app review and future design proposal**, not added MVP scope. Exact implementation choices remain subject to tests and user review.
 
 ## 2. Non-negotiable principles
 
@@ -181,6 +181,39 @@ Use the existing roster, **weekly GR**, class/role, and member availability to h
 
 **Done when:** rights/licensing are reviewed; the 38 reference labels and real TNW naming differences are audited; each supported class has a tested icon/fallback and consistent responsive styling; Member Registry and Attendance render icons without regressing CRUD or screen readers. Other modules can adopt the same registry incrementally. No schema migration is required merely to render icons.
 
+### 3.10 Detailed RONW Guild Tool review (2026-11-11) — future planning reference
+
+**Source boundary:** Based on the user-provided screenshots, not hands-on functional testing or game documentation. The screenshots demonstrate UI patterns, not official TNW party limits, asset licenses, server capabilities or Aeternum data. Use the workflows as a reference; do **not** copy proprietary artwork, map images, logos, code or share codes.
+
+| Module shown | Observed interface | Aeternum direction and status |
+|---|---|---|
+| Dashboard | Event countdown, roster summary, quick lineup navigation | Future improvement: verified roster/readiness, event calendar, outstanding authorized actions and honest empty states |
+| Auction / Loot | 22 items, ordered reservations, repeat queue entries and random pick when eligible | **Deferred** until guild loot/fairness rules are explicitly approved |
+| Guild League | Main 12 five-slot teams plus Sub 18 five-slot teams, leader slot, lane, member pool, filters and auto-fill | **Agreed-future Team Planner reference**, not validated in-game roster capacities |
+| Guild League Plan | Lineup planning separated from battle-map placement | **Proposed** tactical editor: map positions and annotated plans are not attendance evidence |
+| Polarity Zone | Elite and Dungeon lineups, up to 250 UI slots | **Deferred**; screenshot counts do not establish actual event requirements |
+| Mirror World | 30 five-slot parties, healer-priority auto-fill | **Proposed future** event party planning, separate from existing *performance/total-damage* analytics |
+| Siege | 30 five-slot parties; explicit 'Copy Parties from Guild League' action | Future import with preview, independent snapshot, source provenance and confirmation |
+| Siege Plan | Target castle, attack/defense/custom plan, three illustrated map stages, step titles, pins/arrows/boxes/text and draggable parties | **Proposed future** multi-step tactical planning with original/licensed maps and version history |
+| Attendance | Event-specific leave of absence (LOA), per-week reporting, auto-removal from planned lineups in the reference UI | **Do not clone auto-removal:** member-reported availability is separate from evidence-based participation; officer approves any replacement |
+| History | Search, per-actor category changes and CSV export, with a stated latest-500-item limit | Persistent server-side role-filtered audit, with explicit retention policy; no automatic 500-record cap |
+| Profile / Settings | IGN/class, leader/co-leader/member invitation, read-only view code, Discord webhook and event reminder options | Preserve **current officer-only access**; external read-only sharing and Discord are **proposed later**, pending privacy/security review |
+
+**Forward design contract (for future Team Planner only):**
+
+1. Reuse the canonical PostgreSQL member identities, class icon registry, independently recorded combat roles, weekly *verified* GR and explicit availability. Job class or GR never proves role, strength, or event attendance.
+2. Event-scoped plan schema should support team ID/name, battlefield and lane where applicable, team leader, manually assigned slots, locks, eligibility flags, reported LOA, reserve/substitute candidates, owner and `DRAFT / REVIEWED / PUBLISHED` state. Record revisions in append-only history.
+3. Build accessible mouse/touch/keyboard manual assignments first. Validate duplicate membership, unassigned/overbooked players, unavailable members and team-role gaps. Any healer requirement must be explicitly configured per event; do not infer healer solely from class icons.
+4. **Suggestion-only auto-fill:** transparent ranking by approved rules/availability and role needs; never change locked teams or silently publish. Officers review all proposed changes. No opaque GR-based universal score.
+5. **League-to-Siege copy:** destination roster is a dated snapshot, copied only after diff/preview/confirmation. Later changes to the source must not silently update Siege; preserve the original revision and rollback history.
+6. **Tactical maps:** separate lineups from map arrangements; support multiple named/ordered stages, map reference, party markers and annotated arrows/boxes/text/pins. Store marker positions relative to the map canvas, support responsive use and audited editing. Map art must be original or licensed. These maps are not scoreboards, OCR evidence or proof of participation.
+7. **LOA is not attendance.** Treat a member-submitted explanation as an availability signal with restricted reason visibility. Show a flagged lineup conflict; only an authorized officer may confirm substitution. Preserve prior lineup and keep the existing BEFORE/DURING/AFTER observations and officer-reviewed assessments independent.
+8. **Safe sharing:** future printable/read-only plans must omit member reasons, officer notes, private evidence URLs, sensitive identifiers and authentication tokens. The screenshot's view-code design is **not** adopted under existing officer-only auth. Discord webhook publishing is optional later, with webhook secrets on the API only, allowlisted mentions/destinations, explicit publish confirmation, rate limits/idempotency and audit.
+9. **Scheduling:** verify the game's event clock and Asia/Manila conversion independently before adopting any recurring reminder times. Preserve event instances across Monday weekly reset instead of erasing or auto-overwriting prior plans.
+10. **Performance and cost:** keep UI compact with meaningful empty states, lazy-load oversized battle maps and large grids; preserve accessibility and avoid CPU-heavy automation on the sensitive small Bastion/Inspector host.
+
+**Before implementing these future modules:** confirm actual party counts and event rules from TNW; obtain guild leader's approval of composition and substitute policy; validate read-only visibility boundaries; confirm rights to every tactical map/class asset; test mobile + keyboard UX. Auction and Polarity remain **deferred**. Nothing in this reference review changes Phase 3 release readiness or permissions.
+
 ## 4. Extraction and data workflow
 
 1. Clerk creates or selects event/weekly snapshot with required date, boss/opponent and battlefield as appropriate.
@@ -206,7 +239,7 @@ Each evidence item stores file checksum, event ID, original filename, capture ti
 | API | Express + Node.js + TypeScript + Zod |
 | Database | PostgreSQL, Drizzle ORM + SQL migrations |
 | Authentication | Local accounts (no Supabase Auth); server-side sessions, secure cookies |
-| Evidence | Google Drive API (private), server-side administrator OAuth |
+| Evidence | **Current:** authenticated Multer private disk uploads, 7-day byte expiry. **Later optional:** private Google Drive API and admin OAuth |
 | Reporting | Google Sheets API: manual/controlled export and reviewed import |
 | OCR | OpenCV + Tesseract, PaddleOCR evaluation; local processing |
 | Deployment | Docker Compose, Nginx reverse proxy, HTTPS |
@@ -267,7 +300,7 @@ Use sufficiently wide numeric types for billion-scale damage; `NULL` for missing
 | **3 — Attendance + Member Action Center** | BEFORE/DURING/AFTER capture, completeness, careful assessments, officer reasons/comments, audit and permissions | Real checkpoint set can be reviewed; unknown ≠ absent; sensitive explanations stay private |
 | **3.5 — Class icons / UI polish (future)** | Build a licensed WebP class icon registry, family colors, reusable roster/attendance cards and consistent navigation iconography | Names/colors centrally mapped, fallback accessible, assets permission-reviewed and optimized |
 | **4 — Event performance** | Mirror World first (boss metadata, 900s rate), then Guild League's five tabs and Guild Siege; evidence review and trends | Screenshots correctly map to reviewed rows, with units, duplicates and team/player separation tested |
-| **5 — Team Planner (future)** | Manual plans, configurable team slots, role alerts, optional auto-fill, share/print | Assignments can be edited without altering attendance or sensitive records |
+| **5 — Team Planner (future)** | Accessible manual League/Siege lineups, reviewed copy/import, availability and composition alerts, optional suggestion-only auto-fill; separate optional tactical map steps | Saved/versioned plans do not change attendance; sensitive notes never publish; capacities and image rights verified first |
 | **6 — Integrations/hardening + deployment** | Private Drive evidence, controlled Sheets import/export, local OCR benchmark, encrypted offsite backups, VPS preflight and deployment | Recovery tested, permissions enforced, existing Zulip services healthy |
 
 **VPS pre-deployment gate:** inspect the Bastion/Inspector server's actual capacity, SSH security boundary, inspection services, backup and console access, firewall (IPv4/IPv6), and resource headroom. An isolated deployment is contingent on explicit approval; the small bastion may be unsuitable. Zulip is out of scope.
@@ -290,22 +323,28 @@ Every feature must include basic validation, authorization where relevant, dupli
 12. OCR accuracy with mixed-language names, alternate resolutions and scrolling screens?
 13. Team planner: capacity per event, healer/class rules, competing assignments, manual overrides and whether officers want auto-fill?
 14. Are Guild Auction and Polarity Zone features truly needed by Aeternum? They remain deferred.
+15. Which League Main/Sub, Siege and Mirror World party counts/lanes and healer requirements are actual TNW rules, versus reference UI design?
+16. Would an original/licensed multi-stage tactical map board be valuable after basic team planning?
+17. How do officer-approved substitutions and reported LOA alter planned squads without changing event evidence/attendance?
+18. Would future read-only plan sharing be appropriate given existing officer-only authentication, and what is never exportable?
+19. Which event start times are authoritative for the game, and should Discord reminders/publishing be opt-in?
 
 ## 10. Immediate next actions
 
-- [x] Initial North Star, agent instructions and React/Vite demo committed to GitHub.
-- [x] Connected GitHub read/write verified via committed `AI/HANDOFF.md` update.
-- [ ] Align `AI/TASKS.md`, `AI/DECISIONS.md`, `AI/HANDOFF.md`, and the legacy `README.md` with this revised baseline.
-- [ ] Verify the React starter can build and document actual behavior.
-- [ ] Confirm guild Rating vs GR, reporting week start, and officer permissions.
-- [ ] Implement local Express + PostgreSQL integration, then member roster / weekly snapshot workflow.
-- [ ] Prototype three-checkpoint attendance and private officer case review.
-- [ ] Implement Mirror World first for event-performance OCR once the core data model works.
-- [ ] Separately verify bastion resources, backups, isolation and access controls before **any** VPS deployment.
-
+- [x] Commit North Star, agent instructions, Yarn/Express/PostgreSQL foundation and officer-only auth (PRs #1–#2).
+- [x] Merge server-backed Member Registry / reviewed weekly GR (PR #3); this portion was verified at https://aeternum.eleven22.io.
+- [x] Merge Phase 3 attendance/Member Action Center and 7-day private evidence code (PR #4); **live Phase 3 rollout remains unverified**.
+- [x] Document the 38-class WebP design and this RONW reference screenshot review; **no third-party images were imported**.
+- [ ] **Immediate release gate:** determine deployed bastion commit vs PR #4 merge; validate additive migration, officer/clerk permission checks, private upload size/signature controls, seven-day expiry/410 and hourly cleanup timer; do not modify VPS without approval.
+- [ ] Complete browser acceptance of BEFORE/DURING/AFTER attendance, assessment restrictions, confidential cases, file uploads and expired evidence.
+- [ ] Verify roster Rating vs GR, week reset and guild policy on private casework/exceptions.
+- [ ] In a separate small UI change, develop typed class icon registry/fallbacks with licensed/original assets; never store icons in ephemeral screenshot directory.
+- [ ] Next substantive metrics slice: Mirror World, then Guild League/Siege screenshot review. Keep tactical maps/auto-fill future until rules/permissions are verified.
+- [ ] Review bastion disk/security/backup risk before deploying further changes; the user has deferred off-server backup work.
 ---
 
 **Change log**
+- **2026-11-11:** Reviewed full RONW Guild Tool screenshot tour, categorized observed modules vs future/deferred Aeternum work, and specified manual-first lineups, audited snapshots, LOA separation, map/licensing boundaries, safe sharing and Discord/clock safeguards. Refreshed Phase 3 deployment-verification checkpoint.
 - **2026-11-11:** Added agreed future 38-class WebP icon registry and class-family color system from user-supplied visual reference; preserved role/GR separation, asset-licensing gate and permanent-vs-expiring file distinction. Updated Phase 3 status to merged code, not confirmed live deployment.
 - **2026-11-10:** Audited against verified repository state and later reference UI discussion; closed stale GitHub 403 note; acknowledged React-only prototype; added **future** Team Planner, deferred Auction/Polarity Zone, moved Attendance/Member Actions before complex performance OCR, and moved screenshot examples out of product policy.
 - **2026-10-23:** Initial requirements North Star consolidated from screenshot analysis, agreed workflows, cloud integration approach and VPS planning. Documenting plans **does not mean the application has been deployed**.
