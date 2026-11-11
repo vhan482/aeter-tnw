@@ -1,9 +1,9 @@
 import type { Express } from 'express';
 import type pg from 'pg';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { z } from 'zod';
-import { members, mirrorWorldBosses, mirrorWorldSessions, mirrorWorldResults,
+import { members, memberAliases, mirrorWorldBosses, mirrorWorldSessions, mirrorWorldResults,
   mirrorWorldResultHistory } from '../db/schema.js';
 import { actor, conflict, handleConstraint, invalid, noStore, notFound,
   reviewerOnly, wrap, type Guards } from '../ops/common.js';
@@ -108,6 +108,66 @@ export function registerMirrorWorldRoutes(app:Express,pool:pg.Pool,guards:Guards
       averageDpsEstimate:estimateAverageDps(result.damageEstimate,session.durationSeconds)
     }));
     res.json({session,results});
+  }));
+
+
+  /** Roster identities and historic aliases for the local OCR review dialog.
+   * Human matching remains mandatory if a detected name is ambiguous.
+   */
+  app.get(base+'/roster-index',wrap(async(_req,res)=>{
+    const people=await db.select({
+      id:members.id,characterName:members.characterName,memberStatus:members.memberStatus
+    }).from(members).orderBy(members.characterName).limit(250);
+    const history=await db.select({memberId:memberAliases.memberId,alias:memberAliases.alias})
+      .from(memberAliases).limit(5000);
+    const aliases=new Map<string,string[]>();
+    for(const row of history)aliases.set(row.memberId,[...(aliases.get(row.memberId)??[]),row.alias]);
+    res.json({members:people.map(p=>({...p,aliases:aliases.get(p.id)??[]}))});
+  }));
+
+  /** One reviewed screenshot may contain many rows. Save the whole reviewed
+   * batch transactionally; a duplicate member never causes partial insertion.
+   */
+  app.post(base+'/sessions/:id/results/batch',guards.csrf,wrap(async(req,res)=>{
+    const id=uuid.safeParse(req.params.id);
+    const schema=z.object({
+      rows:z.array(resultFields).min(1).max(50),
+      reviewed:z.literal(true)
+    }).strict();
+    const body=schema.safeParse(req.body);
+    if(!id.success||!body.success){invalid(res);return;}
+    const memberIds=body.data.rows.map(row=>row.memberId);
+    if(new Set(memberIds).size!==memberIds.length){
+      res.status(409).json({error:'Repeated member in reviewed rows; resolve duplicates first'});return;
+    }
+    const ranks=body.data.rows.flatMap(row=>row.rank===null?[]:[row.rank]);
+    if(new Set(ranks).size!==ranks.length){
+      res.status(409).json({error:'Repeated leaderboard rank; review the screenshot before saving'});return;
+    }
+    const parsed=body.data.rows.map(row=>parseDamageDisplay(row.damageRaw));
+    if(parsed.some(value=>!value)){
+      res.status(422).json({error:'Invalid displayed damage in reviewed batch'});return;
+    }
+    const [session]=await db.select({id:mirrorWorldSessions.id})
+      .from(mirrorWorldSessions).where(eq(mirrorWorldSessions.id,id.data)).limit(1);
+    if(!session){notFound(res);return;}
+    const verifiedPeople=await db.select({id:members.id}).from(members)
+      .where(inArray(members.id,memberIds));
+    if(verifiedPeople.length!==memberIds.length){
+      res.status(422).json({error:'One or more reviewed member identities do not exist'});return;
+    }
+    try{
+      const result=await db.transaction(async tx=>tx.insert(mirrorWorldResults).values(
+        body.data.rows.map((row,i)=>({
+          sessionId:id.data,memberId:row.memberId,rank:row.rank,
+          damageRaw:row.damageRaw,damageEstimate:parsed[i]!.normalized,
+          approximate:parsed[i]!.approximate,
+          sourceReference:row.sourceReference,evidenceUploadId:row.evidenceUploadId,
+          reviewedBy:actor(res).id
+        }))
+      ).returning({id:mirrorWorldResults.id}));
+      res.status(201).json({created:result.length,ids:result.map(row=>row.id)});
+    }catch(error){if(!handleConstraint(error,res))throw error;}
   }));
 
   app.post(base+'/sessions/:id/results',guards.csrf,wrap(async(req,res)=>{

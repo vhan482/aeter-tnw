@@ -29,3 +29,32 @@
 .mirror-actions{display:flex;gap:10px;flex-wrap:wrap}
 @media(max-width:980px){.mirror-layout{grid-template-columns:1fr}}
 @media(max-width:520px){.mirror-result{grid-template-columns:1fr}.mirror-result .mirror-numbers{text-align:left}.mirror-result .mirror-numbers button{justify-self:start}}
+
+.mirror-ocr{margin:18px 0;min-width:0}
+.mirror-ocr-header{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.mirror-ocr-label{font-size:.67rem;letter-spacing:.1em;color:#f8d69d;border:1px solid #967342;padding:6px 8px;border-radius:6px}
+.mirror-ocr-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:18px 0}
+.mirror-ocr-input{display:grid;align-content:start;gap:13px;min-width:0}
+.mirror-ocr-input>label{display:grid;gap:8px;font-size:.9rem}
+.mirror-ocr-input input,.mirror-ocr-input textarea,.mirror-ocr-review input,.mirror-ocr-review select{
+  width:100%;min-width:0;box-sizing:border-box;background:#121d2b;color:#f3f6fb;border:1px solid #425268;
+  border-radius:7px;padding:8px;font:inherit
+}
+.mirror-ocr-input textarea{resize:vertical;min-height:155px}
+.mirror-ocr-input input[type=file]{padding:8px}
+.mirror-ocr-preview{max-width:100%;max-height:320px;object-fit:contain;object-position:left center;
+  border-radius:9px;border:1px solid #425268}
+.mirror-ocr-input button{justify-self:start}
+.mirror-ocr-scroll{overflow-x:auto;margin:12px 0 18px}
+.mirror-ocr-scroll table{width:100%;border-collapse:collapse;min-width:760px}
+.mirror-ocr-scroll th,.mirror-ocr-scroll td{padding:9px;text-align:left;vertical-align:top;
+  border-bottom:1px solid #3b485b;font-size:.84rem}
+.mirror-ocr-scroll small{display:block;opacity:.8;margin-top:5px;overflow-wrap:anywhere}
+.mirror-ocr-scroll input[type=checkbox]{width:16px;min-width:16px}
+.mirror-ocr-scroll select{min-width:185px}
+.mirror-ocr-scroll input[type=number]{max-width:84px}
+.mirror-ocr-review{display:grid;gap:12px}
+.mirror-ocr-review .mirror-review{display:flex;gap:10px;align-items:flex-start;max-width:700px}
+.mirror-ocr-review .mirror-review input{width:18px;min-width:18px;margin-top:2px}
+.mirror-ocr-review>.roster-primary{justify-self:start}
+@media(max-width:850px){.mirror-ocr-layout{grid-template-columns:1fr}}

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import './mirror-world.css';
+import { uploadMirrorEvidence } from './lib/mirror-evidence';
+import { MirrorOcrReview } from './MirrorOcrReview';
 
 type Officer={id:string;role:'GUILD_LEADER'|'OFFICER'|'CLERK'};
 type Context={officer:Officer;onExpired:()=>void};
@@ -25,19 +27,6 @@ async function api<T>(path:string,init:RequestInit={},onExpired?:()=>void):Promi
   if(!res.ok){const body=await res.json().catch(()=>({})) as {error?:string};
     throw new Error(body.error||`Request failed (${res.status})`);}
   return res.status===204?undefined as T:res.json() as Promise<T>;
-}
-async function upload(file:File,onExpired:()=>void):Promise<{id:string;originalName:string}>{
-  if(file.size>5*1024*1024)throw new Error('Screenshot exceeds the 5 MB limit');
-  if(!['image/png','image/jpeg','image/webp'].includes(file.type))
-    throw new Error('Use a PNG, JPEG or WebP screenshot');
-  const data=new FormData();data.append('image',file);
-  const res=await fetch('/api/management/attendance/evidence',{
-    method:'POST',body:data,credentials:'same-origin',cache:'no-store'
-  });
-  if(res.status===401)onExpired();
-  const response=await res.json().catch(()=>({})) as {error?:string;evidence?:{id:string;originalName:string}};
-  if(!res.ok||!response.evidence)throw new Error(response.error||'Screenshot upload failed');
-  return response.evidence;
 }
 const empty={memberId:'',rank:'',damageRaw:'',sourceReference:'',reviewed:false,reason:''};
 function formatDamage(value:string){try{return BigInt(value).toLocaleString('en-US');}catch{return value;}}
@@ -117,7 +106,7 @@ export function MirrorWorldView({officer,onExpired}:Context){
     if(!form.reviewed)throw new Error('You must personally review the source before saving');
     if(!form.memberId)throw new Error('Match the result to an actual member');
     if(editing&&screenshot)throw new Error('For an audited correction, retain the linked screenshot and update the reference');
-    const image=screenshot?await upload(screenshot,onExpired):null;
+    const image=screenshot?await uploadMirrorEvidence(screenshot,onExpired):null;
     const body={
       memberId:form.memberId,rank:form.rank.trim()?Number(form.rank):null,
       damageRaw:form.damageRaw,sourceReference:(image?.originalName||form.sourceReference).trim(),
@@ -182,6 +171,8 @@ export function MirrorWorldView({officer,onExpired}:Context){
         </div>}
       </section>
     </div>
+    {detail&&<MirrorOcrReview sessionId={selected} existing={detail.results}
+      onExpired={onExpired} onSaved={()=>refreshDetail(selected)} />}
     {detail&&<div className="mirror-layout">
       <section className="roster-card">
         <h2>{editing?'Correct reviewed result':'Record player result'}</h2>
