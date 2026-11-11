@@ -68,3 +68,11 @@ OCR is **candidate data**, not truth. Prefer zero-cost local computer-vision pro
 - Officers/clerks select/edit rows and review the original local image. POST batch to the authenticated server only on explicit confirmation. The optional screenshot is uploaded once, with metadata shared by all saved rows and seven-day byte retention.
 - Future mainstream browser OCR option: evaluate self-hosted Tesseract.js (worker/core/traineddata), including licensing, CPU/RAM/bundle size and zero outbound image requests. No live external code or training files are added by this branch.
 - **Accuracy is unmeasured** until real user screenshots and a manually labeled comparison set are provided. Existing tests validate parsing, database constraints and review mechanics, not image-recognition quality.
+
+## Self-hosted browser OCR engine — development branch
+
+- Tesseract.js v7 is loaded only on demand by `src/lib/tesseract-reader.ts`; `scripts/copy-ocr-assets.mjs` copies the locked npm worker, WebAssembly variants and `eng.traineddata.gz` into `public/ocr` for the same-origin Vite build.
+- The screenshot is decoded, bounded to 5 MB and 12 megapixels, optionally grayscaled/contrast enhanced, and read in the browser. No third-party runtime OCR API/CDN receives the image. Check CSP `worker-src` and `wasm-unsafe-eval` policies at deployment.
+- Native TextDetector and manually pasted OCR text are fallbacks. The OCR confidence score is not evidence of correctness; all candidate rows remain unchecked and must be reviewed.
+- The English-only model can misread Unicode/CJK, icons, decorated fonts, dark UI outlines and K/M/B suffixes. Keep aliases and manual correction. Do not report extraction accuracy until benchmarked on labeled original TNW screenshots.
+- OCR assets are permanent application static files, **not** seven-day screenshot evidence. Screenshot bytes only go to private Aeternum storage after approved save.

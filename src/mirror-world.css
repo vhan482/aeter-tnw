@@ -58,3 +58,7 @@
 .mirror-ocr-review .mirror-review input{width:18px;min-width:18px;margin-top:2px}
 .mirror-ocr-review>.roster-primary{justify-self:start}
 @media(max-width:850px){.mirror-ocr-layout{grid-template-columns:1fr}}
+.mirror-ocr-input .mirror-ocr-option{display:flex;align-items:center;gap:8px}
+.mirror-ocr-option input[type="checkbox"]{width:18px;min-width:18px;accent-color:#7ebde0}
+.mirror-ocr-progress{padding:10px 12px;border-radius:8px;background:#172b3d;color:#b6deff;font-size:.86rem}
+
