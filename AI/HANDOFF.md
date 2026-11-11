@@ -120,3 +120,12 @@
 - Contrast-enhanced local Canvas processing caps source image at 12 megapixels/5 MB; native TextDetector and paste-text/manual workflows remain fallback options. OCR confidence is advisory, never an approval.
 - Known limitation: English model may not read non-Latin names accurately. OCR quality against real in-game screenshots has **not** been measured; request unedited varied resolution/scroll/highlighted screenshots for benchmark before broad feature acceptance.
 - No GitHub PR is production deployment authorization. The bastion is still serving Phase 2B code; Phase 3 and Mirror World migrations/storage/timer are not activated. User asked to prioritize application features over more VPS deployment steps.
+
+## 2026-11-11 — Mirror World boss context and same-boss progression (PR pending)
+
+- PR #7 (self-hosted Tesseract browser OCR) confirmed merged into `main` at `391e239`; current user direction is to continue developing practical guild functions instead of repeatedly touching production.
+- Feature branch `feat/mirror-boss-insights` adds additive migration `0005` with a boss record version and append-only officer correction history; no changes to existing reviewed damage records.
+- Authenticated `PATCH /api/management/mirror-world/bosses/:id` requires Guild Leader/Officer, strict Origin/CSRF, a reason, optimistic version and audit; Clerk can read boss context but cannot edit.
+- Authenticated `GET /api/management/mirror-world/insights?bossId=&memberId=` shows up to 100 reviewed results (UI: latest 40), same-boss member only. It calculates duration-aware approximate average DPS and signed run-over-run changes with BigInt-safe exact ratios, and marks the *best within the displayed window*, not an all-time best.
+- Explicitly do **not** infer missed sessions as zero performance, invent members, cross-compare bosses/classes, or silently equate roster Rating with verified GR. Current boss metadata revisions do not imply all prior events were fought under that revised taxonomy.
+- No VPS, systemd, Nginx, runtime deployment or production SQL changes. CI and browser acceptance gates are pending; Phase 3 upload/timer and Mirror World `0004` remain prerequisites before production rollout of `0005`.
