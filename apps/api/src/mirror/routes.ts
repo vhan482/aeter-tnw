@@ -4,10 +4,11 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { z } from 'zod';
 import { members, memberAliases, mirrorWorldBosses, mirrorWorldSessions, mirrorWorldResults,
-  mirrorWorldResultHistory } from '../db/schema.js';
+  mirrorWorldResultHistory, mirrorWorldBossHistory } from '../db/schema.js';
 import { actor, conflict, handleConstraint, invalid, noStore, notFound,
   reviewerOnly, wrap, type Guards } from '../ops/common.js';
 import { estimateAverageDps, parseDamageDisplay } from './damage.js';
+import { buildMirrorTrends } from './insights.js';
 
 const base = '/api/management/mirror-world';
 const uuid = z.string().uuid();
@@ -16,6 +17,10 @@ const bossBody = z.object({
   name: z.string().trim().min(1).max(100),
   race: optionalName(50),size:optionalName(50),element:optionalName(50),
   elementLevel:z.number().int().min(1).max(10).nullable().default(null)
+}).strict();
+const bossEditBody=bossBody.extend({
+  version:z.number().int().min(1),
+  reason:z.string().trim().min(5).max(1000)
 }).strict();
 const sessionBody = z.object({
   bossId:uuid,
@@ -52,6 +57,88 @@ export function registerMirrorWorldRoutes(app:Express,pool:pg.Pool,guards:Guards
       const [boss]=await db.insert(mirrorWorldBosses).values({...body.data,createdBy:actor(res).id}).returning();
       res.status(201).json({boss});
     }catch(error){if(!handleConstraint(error,res))throw error;}
+  }));
+
+
+  /** Officers maintain editable boss context; the version and reason prevent
+   * silent overwrites when boss taxonomy changes after a match. */
+  app.patch(base+'/bosses/:id',guards.csrf,reviewerOnly,wrap(async(req,res)=>{
+    const id=uuid.safeParse(req.params.id),body=bossEditBody.safeParse(req.body);
+    if(!id.success||!body.success){invalid(res);return;}
+    const {version,reason,...fields}=body.data;
+    try{
+      const result=await db.transaction(async tx=>{
+        const [before]=await tx.select().from(mirrorWorldBosses)
+          .where(eq(mirrorWorldBosses.id,id.data)).limit(1);
+        if(!before)return null;
+        if(before.version!==version)return 'conflict' as const;
+        const [after]=await tx.update(mirrorWorldBosses).set({
+          ...fields,version:sql`${mirrorWorldBosses.version}+1`
+        }).where(and(eq(mirrorWorldBosses.id,id.data),
+          eq(mirrorWorldBosses.version,version))).returning();
+        if(!after)return 'conflict' as const;
+        const snapshot=(boss:typeof before)=>({
+          name:boss.name,race:boss.race,size:boss.size,element:boss.element,
+          elementLevel:boss.elementLevel,version:boss.version
+        });
+        await tx.insert(mirrorWorldBossHistory).values({
+          bossId:id.data,before:snapshot(before),after:snapshot(after),
+          reason,changedBy:actor(res).id
+        });
+        return after;
+      });
+      if(result===null){notFound(res);return;}
+      if(result==='conflict'){conflict(res);return;}
+      res.json({boss:result});
+    }catch(error){if(!handleConstraint(error,res))throw error;}
+  }));
+
+  app.get(base+'/bosses/:id/history',wrap(async(req,res)=>{
+    const id=uuid.safeParse(req.params.id);
+    if(!id.success){invalid(res);return;}
+    const [boss]=await db.select({id:mirrorWorldBosses.id}).from(mirrorWorldBosses)
+      .where(eq(mirrorWorldBosses.id,id.data)).limit(1);
+    if(!boss){notFound(res);return;}
+    const changes=await db.select().from(mirrorWorldBossHistory)
+      .where(eq(mirrorWorldBossHistory.bossId,id.data))
+      .orderBy(desc(mirrorWorldBossHistory.changedAt)).limit(100);
+    res.json({changes});
+  }));
+
+  /** Same-boss, same-member comparisons only. This intentionally does not
+   * infer missing runs, unverified GR or equivalence across boss rotations.
+   * Display is bounded; a 'best' value is only best among returned records.
+   */
+  app.get(base+'/insights',wrap(async(req,res)=>{
+    const query=z.object({
+      bossId:uuid,memberId:uuid,
+      limit:z.coerce.number().int().min(2).max(100).default(40)
+    }).strict().safeParse(req.query);
+    if(!query.success){invalid(res);return;}
+    const {bossId,memberId,limit}=query.data;
+    const [boss]=await db.select({id:mirrorWorldBosses.id,name:mirrorWorldBosses.name})
+      .from(mirrorWorldBosses).where(eq(mirrorWorldBosses.id,bossId)).limit(1);
+    const [member]=await db.select({id:members.id,name:members.characterName})
+      .from(members).where(eq(members.id,memberId)).limit(1);
+    if(!boss||!member){notFound(res);return;}
+    const found=await db.select({
+      sessionId:mirrorWorldSessions.id,startsAt:mirrorWorldSessions.startsAt,
+      durationSeconds:mirrorWorldSessions.durationSeconds,
+      rank:mirrorWorldResults.rank,damageRaw:mirrorWorldResults.damageRaw,
+      damageEstimate:mirrorWorldResults.damageEstimate,
+      approximate:mirrorWorldResults.approximate,
+      sourceReference:mirrorWorldResults.sourceReference
+    }).from(mirrorWorldResults)
+      .innerJoin(mirrorWorldSessions,
+        eq(mirrorWorldResults.sessionId,mirrorWorldSessions.id))
+      .where(and(eq(mirrorWorldSessions.bossId,bossId),
+        eq(mirrorWorldResults.memberId,memberId)))
+      .orderBy(desc(mirrorWorldSessions.startsAt),desc(mirrorWorldSessions.id))
+      .limit(limit+1);
+    const hasMore=found.length>limit;
+    const rows=buildMirrorTrends(found.slice(0,limit).reverse()).reverse();
+    res.json({boss,member,rows,hasMore,
+      note:'Only reviewed rows shown. Changes are approximate average-DPS estimates for the same boss; other match conditions may differ.'});
   }));
 
   app.get(base+'/sessions',wrap(async(_req,res)=>{
