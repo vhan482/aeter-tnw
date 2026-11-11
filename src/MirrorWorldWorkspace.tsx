@@ -198,7 +198,7 @@ export function MirrorWorldView({officer,onExpired}:Context){
           <label>Total damage as displayed<input required maxLength={32}
             placeholder="18.8B" value={form.damageRaw}
             onChange={e=>setForm({...form,damageRaw:e.target.value})}/></label>
-          <label>Screenshot/source reference<input required maxLength={255}
+          <label>Screenshot/source reference<input required={!screenshot} maxLength={255}
             placeholder="mirror-ranking-page1.png" value={form.sourceReference}
             onChange={e=>setForm({...form,sourceReference:e.target.value})}/></label>
           {!editing&&<label>Private screenshot (optional, expires after 7 days)
