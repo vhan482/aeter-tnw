@@ -141,7 +141,7 @@ export function GuildLeagueView({onExpired}:{onExpired:()=>void}){
         const text=metrics[field.key]?.trim()??'';
         data[field.key]=text===''?null:field.kind==='count'?Number(text):text;
         if(field.kind==='count'&&text!==''&&
-          (!Number.isInteger(data[field.key])||Number(data[field.key])<0))
+          (!Number.isSafeInteger(Number(data[field.key]))||Number(data[field.key])<0||Number(data[field.key])>2_000_000_000))
           throw new Error('Counts must be nonnegative integers');
       }
       if(!Object.values(data).some(x=>x!==null))throw new Error('Record at least one visible metric');
