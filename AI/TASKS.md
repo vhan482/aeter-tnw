@@ -135,3 +135,14 @@ For backend-connected features, a feature is done only with UI/API behavior, mig
 - [ ] Benchmark real Ragnarok: The New World screenshots: row extraction accuracy, names including non-Latin, suffix parsing, rank gaps, highlights and scroll offsets. Tune templates/cropping before enabling bulk production use.
 - [ ] Optionally self-host additional language models after measured demand and package footprint review.
 - [ ] Keep production host untouched until separately approved staged Phase 3 and Mirror World deployment.
+
+## Mirror World progression & boss catalog — 2026-11-11 feature branch
+
+- [x] Verify PR #7 merged; continue core reporting independent of unbenchmarked game-image OCR accuracy.
+- [x] Add versioned editable boss race/size/element/level with explicit officer reason, concurrency protection and append-only history.
+- [x] Add same-boss/same-member duration-normalized average DPS progression; exact big-number percent changes, no presumed zeros and a bounded-window best.
+- [x] Add React editor and comparison view with honest labels and unknown/missing behavior.
+- [ ] Validate additive `0005` migration and Drizzle snapshot, role/CSRF tests, unit tests, typecheck/build/CI.
+- [ ] Browser acceptance of real boss metadata correction, history, member selection and progression.
+- [ ] Confirm guild reporting-week reset and actual verified GR semantics before introducing same-week GR efficiency/analytics.
+- [ ] Continue Guild League Main/Sub performance recording after usable Mirror World review.
