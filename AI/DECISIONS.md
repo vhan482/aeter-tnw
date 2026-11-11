@@ -74,3 +74,6 @@ Each decision has status **Agreed / Proposed / Unverified / Deferred**. Add a da
 - **Tradeoffs and risks:** ...
 - **Evidence / follow-up:** ...
 ```
+
+| D-052 | Agreed implementation sequence | Prioritize useful Mirror World capture and reviewed results before further production release ceremony | Phase 3 has passed isolated build and nine integration tests; production remains on older compiled API, no live migration done |
+| D-053 | Implemented on feature branch; OCR pending | Mirror World manual-first screenshot-backed results reuse authenticated 7-day local image storage; recognition returns candidate data for human review before saving | Tiny VPS should not run unbounded CPU OCR; fixed-layout browser/local OCR to be benchmarked against actual TNW screenshots; no paid service required |

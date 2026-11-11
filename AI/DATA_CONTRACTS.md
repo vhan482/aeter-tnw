@@ -10,7 +10,7 @@ This document describes domain rules; member/GR contracts are implemented, while
 - Source values and normalized numbers are stored together (`raw_display`, `normalized_value`, `normalization_precision` or approximation flag).
 - Missing value is `NULL` (unknown), **not 0**. Zero only if the UI explicitly displays zero or reviewer verifies it.
 - Use `BIGINT` or suitable NUMERIC types for enormous accumulated damage; avoid 32-bit integer overflow.
-- Future stored screenshot evidence requires hash/file ID and review status. Phase 3 currently stores filename/reference only, not binary proof. A single screenshot is allowed to support many player rows; many screenshots can support one player row.
+- Phase 3 private screenshot uploads store hash/file ID and seven-day-expiry metadata; bytes are deleted after retention while references persist. Filename-only references still do not prove stored binary evidence. A single screenshot is allowed to support many player rows; many screenshots can support one player row.
 - One member's same-event/battlefield/team stats are consolidated, with per-tab provenance.
 
 ## Weekly GR
@@ -71,3 +71,11 @@ Case types: `ABSENCE_FOLLOWUP|AFK_REPORT|AWOL_REVIEW|GENERAL`. Case statuses: `O
 - Dedupe screenshot by SHA-256 and import rows by event/member/context. Idempotent retry should not duplicate records.
 - CSV/Sheets output escapes formula-leading text (`=`, `+`, `-`, `@`) to protect spreadsheet viewers.
 - Public shared exports omit restricted officer notes/reasons and private Drive IDs by default.
+
+## Mirror World Phase 4 manual-first implementation (feature branch)
+
+- `mirror_world_bosses`: canonical human-created boss name; race/size/element/level initially nullable, never inferred.
+- `mirror_world_sessions`: boss, actual start instant, optional rotation, validated 60–7200 seconds duration (900 default).
+- `mirror_world_results`: unique (session,member), nullable rank, original screenshot damage string, NUMERIC(24,0) estimate text on API, approximation flag, source reference, optional private image ID, reviewer and version.
+- `mirror_world_result_history`: append-only before/after, reason, officer identity and timestamp for corrections. No hard delete of reviewed results.
+- Screenshot totals with `B/M/K/T` are rounded displays; DPS is a derived estimate, not an observed game value. Missing players/ranks are unknown, never zero. OCR remains candidate-only future work.

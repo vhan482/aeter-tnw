@@ -33,6 +33,16 @@ jobs:
       - run: corepack enable
       - run: yarn install --immutable
       - run: yarn typecheck
+      - name: Validate tracked Drizzle migration snapshot
+        env:
+          DATABASE_URL: postgresql://ci:ci_only_for_tests@127.0.0.1:55432/aeter_ci
+        run: |
+          yarn db:generate
+          if [ -n "$(git status --porcelain -- apps/api/drizzle)" ]; then
+            echo "::error::Drizzle schema and committed migration snapshot differ"
+            git status --short -- apps/api/drizzle
+            exit 1
+          fi
       - run: yarn build
       - name: Apply tracked Drizzle migrations to isolated PostgreSQL
         run: yarn workspace @aeter/api db:migrate

@@ -94,3 +94,12 @@
 - **Asset rights are unverified**: downloadable third-party WebP icons must not be copied into the public repo until redistribution rights are confirmed. Use original/licensed alternatives if needed. Icons are permanent static assets, **not** seven-day attendance evidence.
 - Docs-only North Star enhancement was committed directly to main. No icon image files, production UI, database schema or bastion deployment were changed by this update.
 - Note: Phase 3 PR #4 is now **merged** in GitHub, but its deployment to the bastion has not been verified. Older handoff text describing PR #4 as in development is historical.
+
+## 2026-11-11 — Mirror World core development branch (not deployed)
+
+- User redirected attention from repeated VPS release checks to core guild functionality; Phase 3 remains compiled/tested/staged on VPS but NOT activated. Do not silently migrate production or change Nginx/systemd.
+- Branch `feat/mirror-world-capture-core` introduces additive `0004_mirror_world_core` schema for boss catalog, sessions, reviewed results and audit history; new API routes and React Mirror World tab, manual damage entry with optional existing private 7-day evidence upload.
+- Screenshot reading/OCR is **not yet implemented**. Build a browser or local OCR candidate layer after collecting labeled real game screenshots; reject silent saves and preserve raw strings, missing rows and member matching review.
+- Boss race/size/element/level may remain unknown; member IDs must come from shared roster, never row position. A 900s session computes approximate average DPS from cumulative damage, not game DPS.
+- Existing `attendance_evidence` store is reused for screenshot bytes; it requires Phase 3 migration, upload directory and hourly cleanup before live deployment. No third-party assets/real guild data added.
+- PR/CI must pass and the user must approve actual production rollout. Class icon registry remains separate future work.

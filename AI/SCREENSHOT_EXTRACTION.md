@@ -11,7 +11,7 @@ OCR is **candidate data**, not truth. Prefer zero-cost local computer-vision pro
 5. Match names against weekly roster + aliases; never auto-merge ambiguous names.
 6. Deduplicate screenshot hashes and overlapping/scrolled rows.
 7. Display editable candidates with source crops and confidence flags for clerk approval.
-8. Save approved event rows, then archive source file privately in Drive.
+8. Save approved event rows in PostgreSQL with source file IDs/hashes and reviewer identity. Current Phase 3 images are private local uploads with seven-day byte retention; metadata survives expiry. Drive is optional future storage, not the current active path.
 
 ## Known templates
 
@@ -51,3 +51,12 @@ OCR is **candidate data**, not truth. Prefer zero-cost local computer-vision pro
 - Roster screen shows five Online rows and `Rating` values; it cannot establish how many offline members were off-screen.
 
 **All screenshot examples are inspection reference data**, not automatically verified historical records in PostgreSQL. Do not seed any real member data without consent/review.
+
+## Mirror World OCR entry point — planned, not implemented
+
+- Try client-side, self-hosted browser Tesseract for fixed leaderboard screenshots first; keep recognition off the 1-vCPU bastion. No external OCR provider receives raw screenshots by default.
+- Use the current authenticated image endpoint for a temporary private evidence reference when a clerk chooses to upload. Actual OCR candidates should be generated from the selected local image before commit; expire bytes after seven days.
+- Parse displayed `K/M/B/T` cumulative damage using exact integer arithmetic. Treat the suffix as rounded/approximate; estimate average DPS only after confirming duration (default 900 seconds).
+- Preserve unmatched or ambiguous names without guessing member IDs. Resolve against current member identities and aliases, then review before saving.
+- Required before shipping OCR: representative genuine Mirror World screenshots (standard/scroll/highlighted rows; mixed Latin/non-Latin names), labeled baseline, precision/error and timeout measurements on ordinary client devices.
+- No automatic insert from OCR; current Mirror World core PR is manual-entry-first with private screenshot attachment.

@@ -1,4 +1,4 @@
-import { boolean, date, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
+import { boolean, date, index, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // Incremental guild operations schema. Never replace or reinitialize deployed roster tables.
@@ -216,3 +216,51 @@ export const memberActionAudit = pgTable('member_action_audit', {
   actorId: uuid('actor_id').references(() => officerAccounts.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 }, table => [index('member_action_audit_case_idx').on(table.caseId)]);
+
+/** Mirror World results are independently reviewed; damage is a rounded screenshot total. */
+export const mirrorWorldBosses = pgTable('mirror_world_bosses', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: varchar('name', { length: 100 }).notNull(),
+  race: varchar('race', { length: 50 }),
+  size: varchar('size', { length: 50 }),
+  element: varchar('element', { length: 50 }),
+  elementLevel: integer('element_level'),
+  createdBy: uuid('created_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [uniqueIndex('mirror_world_boss_name_uidx').on(sql`lower(${table.name})`)]);
+
+export const mirrorWorldSessions = pgTable('mirror_world_sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  bossId: uuid('boss_id').notNull().references(() => mirrorWorldBosses.id, { onDelete: 'restrict' }),
+  startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+  durationSeconds: integer('duration_seconds').notNull().default(900),
+  rotation: varchar('rotation', { length: 80 }),
+  createdBy: uuid('created_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [index('mirror_world_session_date_idx').on(table.startsAt)]);
+
+export const mirrorWorldResults = pgTable('mirror_world_results', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').notNull().references(() => mirrorWorldSessions.id, { onDelete: 'restrict' }),
+  memberId: uuid('member_id').notNull().references(() => members.id, { onDelete: 'restrict' }),
+  rank: integer('rank'),
+  damageRaw: varchar('damage_raw', { length: 32 }).notNull(),
+  damageEstimate: numeric('damage_estimate', { precision: 24, scale: 0 }).notNull(),
+  approximate: boolean('approximate').notNull(),
+  sourceReference: varchar('source_reference', { length: 255 }).notNull(),
+  evidenceUploadId: uuid('evidence_upload_id').references(() => attendanceEvidence.id, { onDelete: 'restrict' }),
+  reviewedBy: uuid('reviewed_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  reviewedAt: timestamp('reviewed_at', { withTimezone: true }).notNull().defaultNow(),
+  version: integer('version').notNull().default(1)
+}, table => [uniqueIndex('mirror_world_result_member_uidx').on(table.sessionId, table.memberId),
+  index('mirror_world_result_session_idx').on(table.sessionId)]);
+
+export const mirrorWorldResultHistory = pgTable('mirror_world_result_history', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  resultId: uuid('result_id').notNull().references(() => mirrorWorldResults.id, { onDelete: 'restrict' }),
+  before: jsonb('before').$type<Record<string, unknown>>().notNull(),
+  after: jsonb('after').$type<Record<string, unknown>>().notNull(),
+  reason: text('reason').notNull(),
+  changedBy: uuid('changed_by').references(() => officerAccounts.id, { onDelete: 'set null' }),
+  changedAt: timestamp('changed_at', { withTimezone: true }).notNull().defaultNow()
+}, table => [index('mirror_world_result_history_idx').on(table.resultId)]);
