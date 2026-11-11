@@ -36,6 +36,13 @@
       "when": 1794380400000,
       "tag": "0004_mirror_world_core",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794391920000,
+      "tag": "0005_mirror_boss_insights",
+      "breakpoints": true
     }
   ]
 }
