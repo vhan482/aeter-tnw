@@ -167,7 +167,8 @@ For backend-connected features, a feature is done only with UI/API behavior, mig
 - [x] Add conservative four-metric-per-tab parser for Main/Sub DPS & Support, Sub-only Strategy; no auto screen/battlefield classification.
 - [x] Add UI for explicit battlefield/tab choice, local screenshot preview, original OCR text, matching aliases, per-cell correction, deselecting doubtful rows, single-source batch review.
 - [x] Add CSRF-protected atomic batch route and server-side unique identity/field validation; no partial import on duplicate or invalid data.
-- [ ] GitHub Actions: immutable install/typecheck/build/full tests including parser and SQL batch/rollback; review and fix failures before readiness claim.
+- [x] GitHub Actions: immutable install, typecheck, build, self-hosted OCR asset validation, tracked migration, isolated PostgreSQL and parser/batch integration tests passed (20/20, run 43064676909).
+- [ ] Browser/user acceptance remains unverified; CI cannot measure OCR accuracy or UI behavior in actual TNW screenshots.
 - [ ] Browser acceptance with real TNW League screenshots for all five layouts, highlighted/scrolled rows and names with non-Latin scripts.
 - [ ] Evaluate measured OCR precision against annotated ground truth and adjust geometry/column mapping; current parser assumes four rightmost value tokens and may skip wrapped lines.
 - [ ] Eventually add team-wide objectives and opponent external IDs; keep all-unseen and unverified values unknown rather than zero.
