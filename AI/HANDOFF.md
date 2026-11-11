@@ -79,6 +79,14 @@
 - On bastion: create `/var/lib/aeter/uploads` (owned by `aeter`, mode 0700); update aeter-api unit with `ReadWritePaths=/var/lib/aeter/uploads` if ProtectSystem=strict; set `UPLOAD_DIR=/var/lib/aeter/uploads` in API env; Nginx upload route limit >=6m. Install new cleanup unit/timer from docs. No live changes made during PR authoring.
 - Legacy filename-only references do not create a stored image or prove file existence. OCR/Drive uploads not implemented.
 
+## November 11, 2026 — RONW Guild Tool reference review and continuation
+
+- User shared screenshots of external RONW Guild Management Tool: dashboard countdown, auction queue, Guild League Main/Sub team cards, League Plan, Polarity Zone, Mirror World, Siege/copying, Siege Plan multi-step maps, LOA, audit/history, settings, read-only code and Discord scheduling.
+- North Star **Section 3.10** now distinguishes reference UI observations from verified TNW mechanics and Aeternum functionality. **No copied assets, credentials, member records, code, game-rule assumptions or new MVP commitments**.
+- Approved-future team planning remains a separate milestone; proposed map editor and Discord are later; Auction/Polarity deferred. Manual-first assignments, reviewable auto-fill, controlled lineup import, private LOA, separate observed attendance and safe share/audit are required design boundaries.
+- PR #4 confirmed **merged** in GitHub; passing isolated CI is reported on PR. Its **live deployment and acceptance tests remain unverified**. Next technical work: check live commit/migration, private image upload/expiry/timer, role separation and browser workflows before claiming Phase 3 is deployed.
+- This documentation change does not authorize SSH/Nginx/systemd/production modifications. Bastion security responsibilities and deferred backups remain known risks. Job-class icon assets also remain licensing-gated and not implemented.
+
 ## Job class icon visual direction — 2026-11-11
 
 - The North Star now includes **Section 3.9**, an agreed future class-icon registry derived from a user-provided screenshot with 38 class labels and individually downloadable WebP icons.
