@@ -103,3 +103,12 @@
 - Boss race/size/element/level may remain unknown; member IDs must come from shared roster, never row position. A 900s session computes approximate average DPS from cumulative damage, not game DPS.
 - Existing `attendance_evidence` store is reused for screenshot bytes; it requires Phase 3 migration, upload directory and hourly cleanup before live deployment. No third-party assets/real guild data added.
 - PR/CI must pass and the user must approve actual production rollout. Class icon registry remains separate future work.
+
+## 2026-11-11 — Mirror World OCR candidate/review branch
+
+- PR #5 merged at `54dc70e`: server-backed manual Mirror World boss/session/leaderboard, private attachment and audit.
+- Branch `feat/mirror-ocr-review-pipeline` implements **client-only candidate processing** (pure parser + optional browser-native TextDetector), exact canonical-name/alias matching, duplicate/unknown warnings, source preview, editable rank/damage, per-row selection, explicit human approval, and server-side transactional batch save.
+- No third-party OCR scripts or language data are fetched; native TextDetector availability varies by browser. A paste-from-trusted-local-OCR fallback and original manual entry remain available. **Do not claim broad browser OCR recognition yet.**
+- Screenshot file bytes stay in the user's browser until final approve/save; then existing private Phase 3 upload stores one image reference for the entire result batch, with seven-day deletion. No unreviewed data enters PostgreSQL.
+- Roster index/aliases are authenticated and read-only. New batch API enforces CSRF, human-reviewed flags, valid member IDs, duplicate member/rank rejection, damage validation and one SQL transaction (no partial save).
+- No schema, infrastructure, npm dependency or production VPS change in this branch. CI and real image/browser benchmark remain required.
