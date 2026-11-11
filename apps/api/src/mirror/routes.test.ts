@@ -67,7 +67,7 @@ test('Mirror World: boss/session, human-reviewed leaderboard, privacy and audite
       assert.equal(bossHistory.body.changes[0].after.element,'Fire');
 
       await leader.post(root+'/bosses').set('Origin',origin)
-        .send({name:'boss test'}).expect(409);
+        .send({name:'BOSS TEST UPDATED'}).expect(409);
       const session=await clerk.post(root+'/sessions').set('Origin',origin)
         .send({bossId,startsAt:'2026-11-11T20:00:00+08:00',
           durationSeconds:900,rotation:null}).expect(201);
