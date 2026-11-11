@@ -79,3 +79,13 @@ Case types: `ABSENCE_FOLLOWUP|AFK_REPORT|AWOL_REVIEW|GENERAL`. Case statuses: `O
 - `mirror_world_results`: unique (session,member), nullable rank, original screenshot damage string, NUMERIC(24,0) estimate text on API, approximation flag, source reference, optional private image ID, reviewer and version.
 - `mirror_world_result_history`: append-only before/after, reason, officer identity and timestamp for corrections. No hard delete of reviewed results.
 - Screenshot totals with `B/M/K/T` are rounded displays; DPS is a derived estimate, not an observed game value. Missing players/ranks are unknown, never zero. OCR remains candidate-only future work.
+
+## Guild League reviewed capture — initial implemented contract (feature branch)
+
+- `league_matches`: opponent guild (not opponent individual), occurred timestamp, optional stage/result. No invented result if unverified.
+- `league_player_tab_results`: one authoritative reviewed row per (match, MAIN|SUB, DPS|SUPPORT|STRATEGY, stable guild member ID). `STRATEGY` is Sub-only; root `metrics` JSONB is strict-validated per tab. Unknown is null; zero is accepted only if explicitly reviewed.
+- `DPS` stores `kills`, `assists`, `playerDamageRaw`, `buildingDamageRaw` (cumulative, **not** DPS/s). `SUPPORT` stores `deaths`, `revives`, `healingRaw`, `damageTakenRaw`. `STRATEGY` stores `minionMetricRaw` (label unverified), `flagRepairs`, `bossFinishers`, `bossDamageRaw`.
+- K/M/B/T totals keep raw screenshots; API additionally exposes exact integer-normalized damage estimates for computed consolidated metrics (BigInt-to-string). The raw figures may be rounded by the game; do not claim precise DPS.
+- `sourceReference`, optional private `evidenceUploadId`, reviewer, reviewedAt and optimistic version are stored per tab. Corrections are append-only snapshots with officer identity and reason.
+- Only Aeternum roster members are supported in the initial editor; enemy players may not be matched to local guild records. Group results by match + battlefield + member ID, **never row position**.
+- Missing screenshot rows are neither zero statistics nor attendance findings. OCR extraction and opponent-side performance need separate reviewed data contracts and benchmarks.
