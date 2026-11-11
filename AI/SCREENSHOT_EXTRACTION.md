@@ -60,3 +60,11 @@ OCR is **candidate data**, not truth. Prefer zero-cost local computer-vision pro
 - Preserve unmatched or ambiguous names without guessing member IDs. Resolve against current member identities and aliases, then review before saving.
 - Required before shipping OCR: representative genuine Mirror World screenshots (standard/scroll/highlighted rows; mixed Latin/non-Latin names), labeled baseline, precision/error and timeout measurements on ordinary client devices.
 - No automatic insert from OCR; current Mirror World core PR is manual-entry-first with private screenshot attachment.
+
+## Phase 4 OCR candidate screen (development branch)
+
+- Browser-only `src/lib/mirror-ocr.ts` parses recognized or manually pasted text into proposals. It does not send raw recognized text to the API. `TextDetector` is optional native/browser-dependent and should not be claimed as universally available.
+- Recognize explicitly visible `rank + name + cumulative damage` lines, preserving gaps and allowing unknown rank. Test overlaps and ambiguous aliases. Candidate name matching is **exact normalized** against canonical name + prior aliases, not fuzzy.
+- Officers/clerks select/edit rows and review the original local image. POST batch to the authenticated server only on explicit confirmation. The optional screenshot is uploaded once, with metadata shared by all saved rows and seven-day byte retention.
+- Future mainstream browser OCR option: evaluate self-hosted Tesseract.js (worker/core/traineddata), including licensing, CPU/RAM/bundle size and zero outbound image requests. No live external code or training files are added by this branch.
+- **Accuracy is unmeasured** until real user screenshots and a manually labeled comparison set are provided. Existing tests validate parsing, database constraints and review mechanics, not image-recognition quality.
