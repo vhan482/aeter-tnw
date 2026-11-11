@@ -20,7 +20,7 @@ const MAX_CANVAS_DIMENSION = 2800;
 const MIN_DIMENSION = 64;
 
 function sameOriginAsset(relative: string): string {
-  const url = new URL(import.meta.env.BASE_URL + 'ocr/' + relative, window.location.origin);
+  const url = new URL('/ocr/' + relative, window.location.origin);
   if (url.origin !== window.location.origin) {
     throw new Error('OCR assets must be served from the Aeternum origin');
   }
@@ -76,7 +76,9 @@ export async function readMirrorScreenshotWithTesseract(
   // No static import; Vite builds a separate on-demand chunk.
   const { createWorker } = await import('tesseract.js');
 
-  const worker = await createWorker('eng', undefined, {
+  let worker: Awaited<ReturnType<typeof createWorker>> | null = null;
+  try {
+    worker = await createWorker('eng', undefined, {
     workerPath: sameOriginAsset('worker.min.js'),
     corePath: sameOriginAsset('core'),
     langPath: sameOriginAsset('lang'),
@@ -87,13 +89,12 @@ export async function readMirrorScreenshotWithTesseract(
         options.onProgress?.(Math.round(Math.max(0, Math.min(1, entry.progress)) * 100));
       }
     }
-  });
-  try {
+    });
     const {data} = await worker.recognize(canvas);
     return {text:data.text.slice(0,20000),confidence:Number.isFinite(data.confidence)
       ? Math.round(data.confidence) : null,width,height};
   } finally {
     canvas.width = 0;canvas.height = 0;
-    await worker.terminate();
+    if (worker) await worker.terminate();
   }
 }
