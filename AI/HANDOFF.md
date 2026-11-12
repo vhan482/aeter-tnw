@@ -150,3 +150,13 @@
 - Candidate rows default unchecked; exact roster/alias matches are suggestions, never evidence. Unknown values stay NULL and explicit zero stays zero; weird numeric glyphs cannot be saved until corrected. Main/Sub and five tabs are never mixed within one batch.
 - New authenticated `POST /api/management/league/matches/:id/tab-results/batch` allows 1–50 reviewed rows under one explicit battlefield/tab/source. Strict Zod per-tab validation, roster membership verification, duplicate-member detection, CSRF origin, and single SQL transaction/unique-key rejection prevent partial or duplicate imports.
 - No schema or dependency changes and NO changes to production Bastion/Inspector VPS. Test in CI and real browser, including actual TNW screenshots and mixed sort/scroll views, before merging/activating.
+
+## 2026-11-12 — Guild League screenshot calibration lab (feature branch, not deployed)
+
+- PR #10 merged into main at `f9a7771` (checked via GitHub), following PR #9 `f504cac`. Screenshot import and batch review exist in code; their real-image accuracy remains **unmeasured**.
+- Current feature branch `feat/league-ocr-calibration-lab` implements independent verified-source annotations directly in the League OCR review UI, with frozen original Tesseract output, comparison by exact normalized player name, per-field metrics, missing/extra OCR rows and error report.
+- **Important:** 20 images already available in the project are Aeternum browser UI screenshots, not in-game Guild League ranking evidence. They cannot establish recognition accuracy. Do not invent numeric benchmark scores or calibrate column geometry from them.
+- The new `AI/LEAGUE_OCR_BENCHMARK.md` records manual annotation format, five tab templates, privacy, holdout set, evaluation metrics and failure-based tuning.
+- Calibration runs in the browser; original screenshot bytes are not uploaded during OCR or benchmarking. JSON download is explicit and contains player names/recognized text, not image bytes; review before sharing.
+- Strict matching is for measurement only; fuzzy matching must not inflate score. Missing rows count against player recall and field coverage; uncertain ground truth cells are excluded rather than treated as zero.
+- New unit tests use **synthetic text**. CI and browser acceptance still required before merging. No Bastion/Inspector VPS, production database, Nginx, systemd or dependencies were modified.
