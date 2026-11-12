@@ -181,7 +181,7 @@ For backend-connected features, a feature is done only with UI/API behavior, mig
 - [x] Add independent source ground-truth transcription, frozen original OCR output, exact-name recall/precision, per-field accuracy and end-to-end field coverage.
 - [x] Provide opt-in browser-only calibration panel with discrepancy details and explicit local diagnostic JSON download.
 - [x] Add deterministic synthetic benchmark tests including misses, incorrect cells, duplicate OCR names and unknown/zero handling.
-- [ ] CI: TypeScript, immutable build, isolated database and benchmark test checks.
+- [x] GitHub Actions CI: immutable Yarn install, TypeScript, production build, local OCR asset verification, isolated PostgreSQL migrations and all 23 unit/integration tests passed (run 43170896291).
 - [ ] Get original unedited in-game screenshots: Main DPS/Support, Sub DPS/Support/Strategy, full and scrolled/highlighted views.
 - [ ] Run genuine browser OCR, manually label independently, calculate real per-template accuracy. Report uncertainty, device/OS/browser and sample counts.
 - [ ] Tune segmentation, geometry and Unicode language support based on errors; evaluate on a distinct holdout set.
