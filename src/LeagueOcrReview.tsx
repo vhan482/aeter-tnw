@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { matchRosterIdentity, type RosterIdentity } from './lib/mirror-ocr';
+import { benchmarkLeagueOcr, parseLeagueVerifiedRows, type LeagueBenchmarkReport } from './lib/league-ocr-benchmark';
 import { readMirrorScreenshotWithTesseract, verifyMirrorScreenshot } from './lib/tesseract-reader';
 import { uploadMirrorEvidence } from './lib/mirror-evidence';
 import { leagueFieldSets, parseLeagueTabText, validLeagueField,
@@ -33,6 +34,10 @@ export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
   const [progress,setProgress]=useState<number|null>(null);
   const [error,setError]=useState('');
   const [notice,setNotice]=useState('');
+  const [originalOcrText,setOriginalOcrText]=useState('');
+  const [verifiedTruth,setVerifiedTruth]=useState('');
+  const [benchmark,setBenchmark]=useState<LeagueBenchmarkReport|null>(null);
+  const [benchmarkError,setBenchmarkError]=useState('');
 
   useEffect(()=>{
     let active=true;
@@ -78,6 +83,7 @@ export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
   function resetCapture(){
     if(fileInput.current)fileInput.current.value='';
     setFile(null);setRawText('');setReference('');setCandidates([]);
+    setOriginalOcrText('');setVerifiedTruth('');setBenchmark(null);setBenchmarkError('');
     setApproved(false);setError('');setNotice('');setProgress(null);
   }
   function setRow(key:number,change:Partial<Proposed>){
@@ -99,6 +105,8 @@ export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
         enhanceContrast:enhance,onProgress:setProgress
       });
       if(!result.text.trim())throw new Error('No text was recognized. Try changing contrast or paste text from a trusted local tool.');
+      setOriginalOcrText(result.text);
+      setBenchmark(null);setBenchmarkError('');
       setRawText(result.text);setCandidates([]);
       setNotice('OCR text captured locally. Engine confidence '+(result.confidence??'unknown')+
         '% is NOT field accuracy. Correct text and select Parse candidates.');
@@ -121,6 +129,41 @@ export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
         values:candidate.values,warnings:candidate.warnings};
     }));
     setNotice('Candidates are UNSELECTED. Verify the screenshot tab, member, metric order and numbers before approving.');
+  }
+
+
+  /** Use only immutable engine output, never edited candidate text, for scores.
+   * The user independently transcribes ground truth from the original image.
+   * All comparisons and report downloads remain local to this browser.
+   */
+  function runBenchmark(){
+    setBenchmark(null);setBenchmarkError('');
+    if(!file||!originalOcrText){
+      setBenchmarkError('Read this screenshot with local Tesseract first, without editing the engine output.');
+      return;
+    }
+    const truth=parseLeagueVerifiedRows(verifiedTruth,tab);
+    if(truth.errors.length){
+      setBenchmarkError(truth.errors.join(' · '));return;
+    }
+    try{
+      setBenchmark(benchmarkLeagueOcr(tab,originalOcrText,truth.rows,{
+        sourceName:file.name
+      }));
+    }catch(err){setBenchmarkError(message(err));}
+  }
+  function downloadBenchmark(){
+    if(!benchmark)return;
+    const payload={report:benchmark,originalOcrText,independentlyVerifiedRows:verifiedTruth};
+    const content=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(content);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download=`aeternum-league-ocr-${tab.toLowerCase()}-${Date.now()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
 
   async function submit(e:FormEvent){
@@ -184,6 +227,7 @@ export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
                 setFile(selectedFile);setError('');
               }catch(err){setFile(null);setError(message(err));}
               setCandidates([]);setRawText('');setReference('');setApproved(false);
+              setOriginalOcrText('');setVerifiedTruth('');setBenchmark(null);setBenchmarkError('');
             }}/></label>
         {imageUrl&&<img src={imageUrl} className="league-ocr-preview"
           alt="Local Guild League screenshot to compare with OCR candidates"/>}
@@ -213,6 +257,70 @@ export function LeagueOcrReview({matchId,existing,onExpired,onSaved}:Props){
         <small>Expected metric order: {fields.map(f=>f.label).join(' | ')}. An OCR line needs a name and four columns; rows with wrapped/missing columns may be skipped.</small>
       </div>
     </div>
+
+    <details className="league-ocr-calibration">
+      <summary>OCR accuracy lab — compare against independently verified screenshot data</summary>
+      <p className="roster-note">
+        This optional local-only calibration does not save results or upload the screenshot.
+        Use the original game screenshot to manually transcribe each visible player and its
+        four fields. Do not copy or correct the OCR text to create the reference; that
+        would inflate accuracy. Cropped or unreadable fields use ? rather than 0.
+      </p>
+      <label>Verified rows — one per line, separated with | (player name | 4 metrics)
+        <textarea rows={6} value={verifiedTruth} maxLength={25000}
+          placeholder={tab==='DPS'?
+            'Alpha | 8 | 12 | 18.8B | 1.2M\\nBravo | 0 | 2 | 5B | ?':
+            tab==='SUPPORT'?
+              'Alpha | 3 | 2 | 8.4M | 4M':
+              'Alpha | ? | 2 | 0 | 1.5B'}
+          onChange={e=>{setVerifiedTruth(e.target.value);setBenchmark(null);setBenchmarkError('');}}/>
+      </label>
+      <p className="roster-note">Selected tab: <strong>{battlefield} / {tab}</strong>.
+        Column order: {fields.map(field=>field.label).join(' | ')}.
+        Only text captured by this screenshot's OCR run is used for scoring.
+      </p>
+      <button type="button" disabled={!originalOcrText||!verifiedTruth.trim()||busy}
+        onClick={runBenchmark}>Compare original OCR with verified rows</button>
+      {benchmarkError&&<p role="alert" className="phase-error">{benchmarkError}</p>}
+      {benchmark&&<div className="league-ocr-report" role="status">
+        <h3>Local accuracy report — not a production benchmark</h3>
+        <p>Recognized player names: <strong>{benchmark.matchedRows}/{benchmark.labeledRows}</strong>
+          {' '}({benchmark.rowRecallPercent??'—'}% recall); extra/unmatched OCR rows:
+          {' '}{benchmark.ocrCandidates-benchmark.matchedRows}.
+        </p>
+        <p>Field accuracy among recognized names:
+          {' '}<strong>{benchmark.comparedFieldAccuracyPercent??'—'}%</strong>
+          {' '}({benchmark.totalCorrectCells}/{benchmark.totalComparedCells} evaluated cells).
+          End-to-end field coverage:
+          {' '}<strong>{benchmark.endToEndFieldCoveragePercent??'—'}%</strong>
+          {' '}({benchmark.totalCorrectCells}/{benchmark.totalLabeledCells} verified cells).
+        </p>
+        <div className="league-ocr-scroll"><table>
+          <thead><tr><th>Metric</th><th>Verified</th><th>Compared</th>
+            <th>Correct</th><th>Matched-row accuracy</th><th>Overall coverage</th></tr></thead>
+          <tbody>{benchmark.fields.map(score=><tr key={score.key}>
+            <td>{score.label}</td><td>{score.labeled}</td>
+            <td>{score.compared}</td><td>{score.correct}</td>
+            <td>{score.matchPercent===null?'—':score.matchPercent+'%'}</td>
+            <td>{score.coveragePercent===null?'—':score.coveragePercent+'%'}</td>
+          </tr>)}</tbody>
+        </table></div>
+        {!!benchmark.issues.length&&<div className="league-ocr-issues">
+          <h4>Detected discrepancies ({benchmark.issues.length})</h4>
+          <ul>{benchmark.issues.slice(0,80).map((issue,index)=><li key={index}>
+            <strong>{issue.kind}</strong>: {issue.name}
+            {issue.field&&` / ${issue.field}`}
+            {issue.expected!==undefined&&` · verified ${issue.expected}`}
+            {issue.observed!==undefined&&` · OCR ${issue.observed||'missing'}`}
+          </li>)}</ul>
+        </div>}
+        <p className="roster-note">This report compares unedited engine text to independent labels;
+          it does not prove real-world accuracy from one screenshot.</p>
+        <button type="button" onClick={downloadBenchmark}>
+          Download local diagnostic JSON (includes player names and OCR text)
+        </button>
+      </div>}
+    </details>
     {!!candidates.length&&<form className="league-ocr-form" onSubmit={e=>void submit(e)}>
       <h3>Candidate review — {battlefield} / {tab}</h3>
       <p className="roster-note">All rows start unchecked. An exact alias is only a suggestion. Verify the source image and adjust fields; no fuzzy name matching or invisible-player inference.</p>
