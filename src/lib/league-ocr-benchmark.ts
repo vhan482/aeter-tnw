@@ -110,7 +110,7 @@ export function benchmarkLeagueOcr(
   const fields=leagueFieldSets[tab].map(field=>{
     const labeled=verifiedRows.reduce((sum,row)=>
       sum+(row.values[field.key]===null||row.values[field.key]===undefined?0:1),0);
-    return {...field,labeled,compared:0,correct:0} as LeagueFieldScore;
+    return {...field,labeled,compared:0,correct:0};
   });
   for(const row of verifiedRows){
     const key=normalizeOcrName(row.name);
