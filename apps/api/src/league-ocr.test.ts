@@ -61,3 +61,58 @@ test('League OCR: ambiguous alias never resolves to a guessed member ID',()=>{
   assert.deepEqual(matchRosterIdentity('ALPHA',roster),{memberId:'one',status:'EXACT'});
   assert.deepEqual(matchRosterIdentity('A1pha',roster),{memberId:null,status:'UNMATCHED'});
 });
+
+
+import { parseLeagueVerifiedRows, benchmarkLeagueOcr } from '../../../src/lib/league-ocr-benchmark.ts';
+
+test('League OCR calibration: independently labeled rows measure recognition coverage',()=>{
+  const labeled=parseLeagueVerifiedRows([
+    'Alpha | 8 | 12 | 18.8B | 1.2M',
+    'Bravo | 0 | 2 | 5B | ?',
+    'Charlie | 3 | 4 | 1M | 2M'
+  ].join('\n'),'DPS');
+  assert.deepEqual(labeled.errors,[]);
+  const report=benchmarkLeagueOcr('DPS',
+    '1 Alpha 8 12 18.8B 1.2M\n3 Bravo 0 2 5B -\n4 Gambled 3 4 1M 2M',
+    labeled.rows,{at:'2026-11-12T00:00:00.000Z',sourceName:'synthetic-test.png'});
+  assert.equal(report.labeledRows,3);
+  assert.equal(report.ocrCandidates,3);
+  assert.equal(report.matchedRows,2);
+  assert.equal(report.rowRecallPercent,66.67);
+  assert.equal(report.candidatePrecisionPercent,66.67);
+  assert.equal(report.totalLabeledCells,11);
+  assert.equal(report.totalComparedCells,7);
+  assert.equal(report.totalCorrectCells,7);
+  assert.equal(report.comparedFieldAccuracyPercent,100);
+  assert.equal(report.endToEndFieldCoveragePercent,63.64);
+  assert.equal(report.fields.find(f=>f.key==='kills')?.coveragePercent,66.67);
+  assert.ok(report.issues.some(x=>x.kind==='MISSING_ROW'&&x.name==='Charlie'));
+  assert.ok(report.issues.some(x=>x.kind==='EXTRA_OCR_ROW'&&x.name==='Gambled'));
+  assert.equal(report.sourceName,'synthetic-test.png');
+});
+
+test('League OCR calibration: wrong cell, duplicate OCR name and unverified cells',()=>{
+  const labeled=parseLeagueVerifiedRows('Alpha | 8 | 12 | ? | 1.2M','DPS');
+  const wrong=benchmarkLeagueOcr('DPS','1 Alpha 9 12 1M 1.2M',labeled.rows);
+  assert.equal(wrong.totalLabeledCells,3);
+  assert.equal(wrong.totalCorrectCells,2);
+  assert.equal(wrong.comparedFieldAccuracyPercent,66.67);
+  assert.equal(wrong.issues.find(x=>x.kind==='FIELD_MISMATCH')?.field,'kills');
+  const duplicate=benchmarkLeagueOcr('DPS',
+    '1 Alpha 8 12 1M 1M\n3 Alpha 8 12 1M 1M',labeled.rows);
+  assert.equal(duplicate.matchedRows,0);
+  assert.equal(duplicate.rowRecallPercent,0);
+  assert.equal(duplicate.comparedFieldAccuracyPercent,null);
+  assert.ok(duplicate.issues.some(x=>x.kind==='DUPLICATE_OCR_NAME'));
+});
+
+test('League OCR calibration: ground truth requires explicit unique player names and 4 cells',()=>{
+  const bad=parseLeagueVerifiedRows(
+    'Alpha | 8 | 12 | 1M\nAlpha | 8 | 12 | 1M | 1M\nALPHA | 8 | 12 | 1M | 1M',
+    'DPS');
+  assert.equal(bad.rows.length,1);
+  assert.equal(bad.errors.length,2);
+  assert.throws(()=>benchmarkLeagueOcr('DPS','1 Alpha 8 12 1M 1M',[
+    {name:'Alpha',values:{}},{name:'ALPHA',values:{}}
+  ]));
+});
