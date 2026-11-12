@@ -173,3 +173,16 @@ For backend-connected features, a feature is done only with UI/API behavior, mig
 - [ ] Evaluate measured OCR precision against annotated ground truth and adjust geometry/column mapping; current parser assumes four rightmost value tokens and may skip wrapped lines.
 - [ ] Eventually add team-wide objectives and opponent external IDs; keep all-unseen and unverified values unknown rather than zero.
 - [ ] Production rollout separately approved after Phase 3 uploads/cleanup and migrations through Guild League `0006`.
+
+## Guild League OCR accuracy benchmark tooling (2026-11-12, development branch)
+
+- [x] Confirm PR #10 merged (`f9a7771`).
+- [x] Inspect existing project screenshots: all available screenshot samples are Aeternum app UI, not original in-game League ranking screenshots; **no real accuracy claims**.
+- [x] Add independent source ground-truth transcription, frozen original OCR output, exact-name recall/precision, per-field accuracy and end-to-end field coverage.
+- [x] Provide opt-in browser-only calibration panel with discrepancy details and explicit local diagnostic JSON download.
+- [x] Add deterministic synthetic benchmark tests including misses, incorrect cells, duplicate OCR names and unknown/zero handling.
+- [ ] CI: TypeScript, immutable build, isolated database and benchmark test checks.
+- [ ] Get original unedited in-game screenshots: Main DPS/Support, Sub DPS/Support/Strategy, full and scrolled/highlighted views.
+- [ ] Run genuine browser OCR, manually label independently, calculate real per-template accuracy. Report uncertainty, device/OS/browser and sample counts.
+- [ ] Tune segmentation, geometry and Unicode language support based on errors; evaluate on a distinct holdout set.
+- [ ] Keep production untouched until separately approved staged releases and migration/retention setup.
